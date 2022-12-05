@@ -1,0 +1,37 @@
+name: GoTgramBot
+on:
+  workflow_dispatch: {} 
+  schedule:
+    - cron:  '0 12 * * *'
+jobs:
+  build:
+    name: GoTGramBot
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: >
+        pip install --upgrade pip setuptools wheel
+        pip install -r scripts/requirements.txt
+    - name: Generate go files
+      run: python scripts/build.py
+    - name: Open Pull Request
+      uses: peter-evans/create-pull-request@v4
+      with:
+        commit-message: >
+          Generated methods and types for GoTGramBot
+        title: >
+          Updated Methods and types for the lib
+        body: >
+          This is an automated PR.
+        branch: automated-build
+        reviewers: Anandpskerala
+        assignees: Anandpskerala
+        labels: automated
+        delete-branch: true
