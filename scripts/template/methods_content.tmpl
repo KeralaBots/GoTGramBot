@@ -1,0 +1,20 @@
+
+{struct_comment}
+type {struct_name}Opts struct {{
+    {struct_params}
+}}
+
+{comments}
+func (b *Bot) {struct_name}({fields}) ({returns}error) {{
+    params := map[string]string{{}}
+    data_params := map[string]string{{}}
+
+{params}
+
+    r, err := b.Request("{method_name}", params, data_params)
+	if err != nil {{
+		return {is_bool}, err
+	}}
+
+	{single_returns}
+}}

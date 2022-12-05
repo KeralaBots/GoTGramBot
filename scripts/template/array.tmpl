@@ -1,0 +1,10 @@
+// Unmarshal {class_name} json arrays
+func Unmarshal{class_name}Array(r json.RawMessage) (*[]{class_name}, error) {{
+    var tmp *[]{class_name}
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {{
+        return nil, err
+    }}
+    return tmp, err
+}}
+
