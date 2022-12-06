@@ -25,6 +25,18 @@ func (d *Dispatcher) handleWorkers() error {
 					handleMessageWorkers(d.MessageHandlers, d.Bot, update.Message)
 				}
 
+				if update.ChannelPost != nil {
+					handleMessageWorkers(d.MessageHandlers, d.Bot, update.ChannelPost)
+				}
+
+				if update.EditedMessage != nil {
+					handleMessageWorkers(d.EditedMessageHandlers, d.Bot, update.EditedMessage)
+				}
+
+				if update.EditedChannelPost != nil {
+					handleMessageWorkers(d.EditedMessageHandlers, d.Bot, update.EditedChannelPost)
+				}
+
 				if update.CallbackQuery != nil {
 					handleCallbackWorkers(d.CallbackHandlers, d.Bot, update.CallbackQuery)
 				}

@@ -10,16 +10,17 @@ import (
 	"github.com/KeralaBots/GoTGramBot/types"
 )
 
+type Dispatcher struct {
+	Bot                   *Bot
+	IsRunning             bool
+	Offset                int64
+	MessageHandlers       []MessageHandlers
+	CallbackHandlers      []CallbackHandlers
+	EditedMessageHandlers []MessageHandlers
+}
+
 type MessageDispatch func(b *Bot, m *types.Message) error
 type CallbackDispatch func(b *Bot, m *types.CallbackQuery) error
-
-type Dispatcher struct {
-	Bot              *Bot
-	IsRunning        bool
-	Offset           int64
-	MessageHandlers  []MessageHandlers
-	CallbackHandlers []CallbackHandlers
-}
 
 type MessageHandlers struct {
 	Function MessageDispatch
@@ -90,6 +91,20 @@ func (d *Dispatcher) AddMessageHandler(fn MessageDispatch, filter filters.Filter
 		return nil
 	} else {
 		return fmt.Errorf("failed to add messagehandler")
+	}
+}
+
+func (d *Dispatcher) AddEditedMessageHandler(fn MessageDispatch, filter filters.FilterResponse) error {
+	if fn != nil {
+		res := MessageHandlers{
+			Function: fn,
+			Filter:   filter,
+		}
+
+		d.EditedMessageHandlers = append(d.EditedMessageHandlers, res)
+		return nil
+	} else {
+		return fmt.Errorf("failed to add edited_message_handler")
 	}
 }
 

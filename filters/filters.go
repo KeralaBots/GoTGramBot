@@ -39,6 +39,10 @@ var VideoChatStarted FilterResponse = FilterResponse{Type: "video_chat_started"}
 var VideoChatEnded FilterResponse = FilterResponse{Type: "video_chat_ended"}
 var VideoChatParticipantsInvited FilterResponse = FilterResponse{Type: "video_chat_participants_invited"}
 var SuccessfulPayment FilterResponse = FilterResponse{Type: "successful_payment"}
+var Private FilterResponse = FilterResponse{Type: "chat", Data: "private"}
+var Group FilterResponse = FilterResponse{Type: "chat", Data: "group"}
+var SuperGroup FilterResponse = FilterResponse{Type: "chat", Data: "supergroup"}
+var Channel FilterResponse = FilterResponse{Type: "chat", Data: "channel"}
 
 func Command(command string, prefixes []rune) FilterResponse {
 	if prefixes == nil {
@@ -112,6 +116,14 @@ func (f *FilterResponse) CheckMessage(m *types.Message) bool {
 		res = true
 	}
 
+	if f.Type == "chat" {
+		if m.Chat.Type == f.Data {
+			res = true
+		} else {
+			res = false
+		}
+	}
+
 	return res
 }
 
@@ -134,6 +146,14 @@ func (f *FilterResponse) CheckCallback(m *types.CallbackQuery) bool {
 
 	if f.Type == "all" {
 		res = true
+	}
+
+	if f.Type == "chat" {
+		if m.Message.Chat.Type == f.Data {
+			res = true
+		} else {
+			res = true
+		}
 	}
 
 	return res
