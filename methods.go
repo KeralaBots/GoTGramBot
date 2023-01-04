@@ -355,6 +355,7 @@ type SendPhotoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -396,6 +397,7 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["reply_to_message_id"] = strconv.FormatInt(opts.ReplyToMessageId, 10)
@@ -622,6 +624,7 @@ type SendVideoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     SupportsStreaming bool `json:"supports_streaming,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
@@ -682,6 +685,7 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["supports_streaming"] = strconv.FormatBool(opts.SupportsStreaming)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
@@ -720,6 +724,7 @@ type SendAnimationOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -779,6 +784,7 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["reply_to_message_id"] = strconv.FormatInt(opts.ReplyToMessageId, 10)
@@ -1387,19 +1393,30 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
 
 }
 
+// SendChatAction methods's optional params
+type SendChatActionOpts struct {
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+}
+
 // Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
 // We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
-func (b *Bot) SendChatAction(chatId int64, action string) (bool, error) {
+func (b *Bot) SendChatAction(chatId int64, action string, opts *SendChatActionOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["action"] = action
+    if opts != nil {
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+    }
+
 
     r, err := b.Request("sendChatAction", params, data_params)
-    if err != nil {
-        return false, err
-    }
-    
+	if err != nil {
+		return false, err
+	}
+
+	
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2033,7 +2050,7 @@ func (b *Bot) GetChatMemberCount(chatId int64) (int64, error) {
 
 }
 
-// Use this method to get information about a member of a chat. Returns a ChatMember object on success.
+// Use this method to get information about a member of a chat. The method is guaranteed to work for other users, only if the bot is an administrator in the chat. Returns a ChatMember object on success.
 func (b *Bot) GetChatMember(chatId int64, userId int64) (*types.ChatMember, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2128,20 +2145,31 @@ func (b *Bot) CreateForumTopic(chatId int64, name string, opts *CreateForumTopic
 
 }
 
+// EditForumTopic methods's optional params
+type EditForumTopicOpts struct {
+    Name string `json:"name,omitempty"`
+    IconCustomEmojiId string `json:"icon_custom_emoji_id,omitempty"`
+}
+
 // Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
-func (b *Bot) EditForumTopic(chatId int64, messageThreadId int64, name string, iconCustomEmojiId string) (bool, error) {
+func (b *Bot) EditForumTopic(chatId int64, messageThreadId int64, opts *EditForumTopicOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["message_thread_id"] = strconv.FormatInt(messageThreadId, 10)
-    params["name"] = name
-    params["icon_custom_emoji_id"] = iconCustomEmojiId
+    if opts != nil {
+        params["name"] = opts.Name
+        params["icon_custom_emoji_id"] = opts.IconCustomEmojiId
+    }
+
 
     r, err := b.Request("editForumTopic", params, data_params)
-    if err != nil {
-        return false, err
-    }
-    
+	if err != nil {
+		return false, err
+	}
+
+	
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2206,6 +2234,87 @@ func (b *Bot) UnpinAllForumTopicMessages(chatId int64, messageThreadId int64) (b
     params["message_thread_id"] = strconv.FormatInt(messageThreadId, 10)
 
     r, err := b.Request("unpinAllForumTopicMessages", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) EditGeneralForumTopic(chatId int64, name string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["name"] = name
+
+    r, err := b.Request("editGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) CloseGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("closeGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success.
+func (b *Bot) ReopenGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("reopenGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success.
+func (b *Bot) HideGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("hideGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) UnhideGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("unhideGeneralForumTopic", params, data_params)
     if err != nil {
         return false, err
     }
