@@ -39,11 +39,11 @@ func (b *Bot) GetUpdates(opts *GetUpdatesOpts) ([]types.Update, error) {
 
 
     r, err := b.Request("getUpdates", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res []types.Update
     return res, json.Unmarshal(r, &res) 
 
@@ -99,11 +99,11 @@ func (b *Bot) SetWebhook(url string, opts *SetWebhookOpts) (bool, error) {
 
 
     r, err := b.Request("setWebhook", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -125,11 +125,11 @@ func (b *Bot) DeleteWebhook(opts *DeleteWebhookOpts) (bool, error) {
 
 
     r, err := b.Request("deleteWebhook", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -245,11 +245,11 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
 
 
     r, err := b.Request("sendMessage", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -278,11 +278,11 @@ func (b *Bot) ForwardMessage(chatId int64, fromChatId int64, messageId int64, op
 
 
     r, err := b.Request("forwardMessage", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -339,11 +339,11 @@ func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts 
 
 
     r, err := b.Request("copyMessage", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.MessageId
     return res, json.Unmarshal(r, &res) 
 
@@ -355,6 +355,7 @@ type SendPhotoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -396,6 +397,7 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["reply_to_message_id"] = strconv.FormatInt(opts.ReplyToMessageId, 10)
@@ -413,11 +415,11 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
 
 
     r, err := b.Request("sendPhoto", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -510,11 +512,11 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
 
 
     r, err := b.Request("sendAudio", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -602,11 +604,11 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
 
 
     r, err := b.Request("sendDocument", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -622,6 +624,7 @@ type SendVideoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     SupportsStreaming bool `json:"supports_streaming,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
@@ -682,6 +685,7 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["supports_streaming"] = strconv.FormatBool(opts.SupportsStreaming)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
@@ -700,11 +704,11 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
 
 
     r, err := b.Request("sendVideo", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -720,6 +724,7 @@ type SendAnimationOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -779,6 +784,7 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
             params["caption_entities"] = string(bs)
         }
 
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["reply_to_message_id"] = strconv.FormatInt(opts.ReplyToMessageId, 10)
@@ -796,11 +802,11 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
 
 
     r, err := b.Request("sendAnimation", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -872,11 +878,11 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
 
 
     r, err := b.Request("sendVoice", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -952,11 +958,11 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
 
 
     r, err := b.Request("sendVideoNote", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -996,11 +1002,11 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
 
 
     r, err := b.Request("sendMediaGroup", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res []types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1051,11 +1057,11 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
 
 
     r, err := b.Request("sendLocation", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1099,11 +1105,11 @@ func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts 
 
 
     r, err := b.Request("editMessageLiveLocation", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1139,11 +1145,11 @@ func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types
 
 
     r, err := b.Request("stopMessageLiveLocation", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1196,11 +1202,11 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
 
 
     r, err := b.Request("sendVenue", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1247,11 +1253,11 @@ func (b *Bot) SendContact(chatId int64, phoneNumber string, firstName string, op
 
 
     r, err := b.Request("sendContact", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1330,11 +1336,11 @@ func (b *Bot) SendPoll(chatId int64, question string, options []string, opts *Se
 
 
     r, err := b.Request("sendPoll", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -1377,28 +1383,39 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
 
 
     r, err := b.Request("sendDice", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
 }
 
+// SendChatAction methods's optional params
+type SendChatActionOpts struct {
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+}
+
 // Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
 // We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
-func (b *Bot) SendChatAction(chatId int64, action string) (bool, error) {
+func (b *Bot) SendChatAction(chatId int64, action string, opts *SendChatActionOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["action"] = action
+    if opts != nil {
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+    }
+
 
     r, err := b.Request("sendChatAction", params, data_params)
     if err != nil {
         return false, err
     }
+
     
     var res bool
     return res, json.Unmarshal(r, &res) 
@@ -1424,11 +1441,11 @@ func (b *Bot) GetUserProfilePhotos(userId int64, opts *GetUserProfilePhotosOpts)
 
 
     r, err := b.Request("getUserProfilePhotos", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.UserProfilePhotos
     return res, json.Unmarshal(r, &res) 
 
@@ -1471,11 +1488,11 @@ func (b *Bot) BanChatMember(chatId int64, userId int64, opts *BanChatMemberOpts)
 
 
     r, err := b.Request("banChatMember", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1499,11 +1516,11 @@ func (b *Bot) UnbanChatMember(chatId int64, userId int64, opts *UnbanChatMemberO
 
 
     r, err := b.Request("unbanChatMember", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1536,11 +1553,11 @@ func (b *Bot) RestrictChatMember(chatId int64, userId int64, permissions *types.
 
 
     r, err := b.Request("restrictChatMember", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1586,11 +1603,11 @@ func (b *Bot) PromoteChatMember(chatId int64, userId int64, opts *PromoteChatMem
 
 
     r, err := b.Request("promoteChatMember", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1712,11 +1729,11 @@ func (b *Bot) CreateChatInviteLink(chatId int64, opts *CreateChatInviteLinkOpts)
 
 
     r, err := b.Request("createChatInviteLink", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.ChatInviteLink
     return res, json.Unmarshal(r, &res) 
 
@@ -1746,11 +1763,11 @@ func (b *Bot) EditChatInviteLink(chatId int64, inviteLink string, opts *EditChat
 
 
     r, err := b.Request("editChatInviteLink", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.ChatInviteLink
     return res, json.Unmarshal(r, &res) 
 
@@ -1888,11 +1905,11 @@ func (b *Bot) SetChatDescription(chatId int64, opts *SetChatDescriptionOpts) (bo
 
 
     r, err := b.Request("setChatDescription", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1916,11 +1933,11 @@ func (b *Bot) PinChatMessage(chatId int64, messageId int64, opts *PinChatMessage
 
 
     r, err := b.Request("pinChatMessage", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -1943,11 +1960,11 @@ func (b *Bot) UnpinChatMessage(chatId int64, opts *UnpinChatMessageOpts) (bool, 
 
 
     r, err := b.Request("unpinChatMessage", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2033,7 +2050,7 @@ func (b *Bot) GetChatMemberCount(chatId int64) (int64, error) {
 
 }
 
-// Use this method to get information about a member of a chat. Returns a ChatMember object on success.
+// Use this method to get information about a member of a chat. The method is guaranteed to work for other users, only if the bot is an administrator in the chat. Returns a ChatMember object on success.
 func (b *Bot) GetChatMember(chatId int64, userId int64) (*types.ChatMember, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2118,29 +2135,40 @@ func (b *Bot) CreateForumTopic(chatId int64, name string, opts *CreateForumTopic
 
 
     r, err := b.Request("createForumTopic", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.ForumTopic
     return res, json.Unmarshal(r, &res) 
 
 }
 
+// EditForumTopic methods's optional params
+type EditForumTopicOpts struct {
+    Name string `json:"name,omitempty"`
+    IconCustomEmojiId string `json:"icon_custom_emoji_id,omitempty"`
+}
+
 // Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
-func (b *Bot) EditForumTopic(chatId int64, messageThreadId int64, name string, iconCustomEmojiId string) (bool, error) {
+func (b *Bot) EditForumTopic(chatId int64, messageThreadId int64, opts *EditForumTopicOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["message_thread_id"] = strconv.FormatInt(messageThreadId, 10)
-    params["name"] = name
-    params["icon_custom_emoji_id"] = iconCustomEmojiId
+    if opts != nil {
+        params["name"] = opts.Name
+        params["icon_custom_emoji_id"] = opts.IconCustomEmojiId
+    }
+
 
     r, err := b.Request("editForumTopic", params, data_params)
     if err != nil {
         return false, err
     }
+
     
     var res bool
     return res, json.Unmarshal(r, &res) 
@@ -2215,6 +2243,87 @@ func (b *Bot) UnpinAllForumTopicMessages(chatId int64, messageThreadId int64) (b
 
 }
 
+// Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) EditGeneralForumTopic(chatId int64, name string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["name"] = name
+
+    r, err := b.Request("editGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) CloseGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("closeGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success.
+func (b *Bot) ReopenGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("reopenGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success.
+func (b *Bot) HideGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("hideGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
+func (b *Bot) UnhideGeneralForumTopic(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("unhideGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // AnswerCallbackQuery methods's optional params
 type AnswerCallbackQueryOpts struct {
     Text string `json:"text,omitempty"`
@@ -2238,11 +2347,11 @@ func (b *Bot) AnswerCallbackQuery(callbackQueryId string, opts *AnswerCallbackQu
 
 
     r, err := b.Request("answerCallbackQuery", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2283,11 +2392,11 @@ func (b *Bot) SetMyCommands(commands []types.BotCommand, opts *SetMyCommandsOpts
 
 
     r, err := b.Request("setMyCommands", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2319,11 +2428,11 @@ func (b *Bot) DeleteMyCommands(opts *DeleteMyCommandsOpts) (bool, error) {
 
 
     r, err := b.Request("deleteMyCommands", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2355,11 +2464,11 @@ func (b *Bot) GetMyCommands(opts *GetMyCommandsOpts) ([]types.BotCommand, error)
 
 
     r, err := b.Request("getMyCommands", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res []types.BotCommand
     return res, json.Unmarshal(r, &res) 
 
@@ -2391,11 +2500,11 @@ func (b *Bot) SetChatMenuButton(opts *SetChatMenuButtonOpts) (bool, error) {
 
 
     r, err := b.Request("setChatMenuButton", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2417,11 +2526,11 @@ func (b *Bot) GetChatMenuButton(opts *GetChatMenuButtonOpts) (*types.MenuButton,
 
 
     r, err := b.Request("getChatMenuButton", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.MenuButton
     return res, json.Unmarshal(r, &res) 
 
@@ -2453,11 +2562,11 @@ func (b *Bot) SetMyDefaultAdministratorRights(opts *SetMyDefaultAdministratorRig
 
 
     r, err := b.Request("setMyDefaultAdministratorRights", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -2479,11 +2588,11 @@ func (b *Bot) GetMyDefaultAdministratorRights(opts *GetMyDefaultAdministratorRig
 
 
     r, err := b.Request("getMyDefaultAdministratorRights", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.ChatAdministratorRights
     return res, json.Unmarshal(r, &res) 
 
@@ -2534,11 +2643,11 @@ func (b *Bot) EditMessageText(text string, opts *EditMessageTextOpts) (*types.Me
 
 
     r, err := b.Request("editMessageText", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -2588,11 +2697,11 @@ func (b *Bot) EditMessageCaption(opts *EditMessageCaptionOpts) (*types.Message, 
 
 
     r, err := b.Request("editMessageCaption", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -2637,11 +2746,11 @@ func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOp
 
 
     r, err := b.Request("editMessageMedia", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -2677,11 +2786,11 @@ func (b *Bot) EditMessageReplyMarkup(opts *EditMessageReplyMarkupOpts) (*types.M
 
 
     r, err := b.Request("editMessageReplyMarkup", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -2713,11 +2822,11 @@ func (b *Bot) StopPoll(chatId int64, messageId int64, opts *StopPollOpts) (*type
 
 
     r, err := b.Request("stopPoll", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Poll
     return res, json.Unmarshal(r, &res) 
 
@@ -2799,11 +2908,11 @@ func (b *Bot) SendSticker(chatId int64, sticker types.InputFile, opts *SendStick
 
 
     r, err := b.Request("sendSticker", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -2958,11 +3067,11 @@ func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, emoji
 
 
     r, err := b.Request("createNewStickerSet", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3043,11 +3152,11 @@ func (b *Bot) AddStickerToSet(userId int64, name string, emojis string, opts *Ad
 
 
     r, err := b.Request("addStickerToSet", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3118,11 +3227,11 @@ func (b *Bot) SetStickerSetThumb(name string, userId int64, opts *SetStickerSetT
 
 
     r, err := b.Request("setStickerSetThumb", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3163,11 +3272,11 @@ func (b *Bot) AnswerInlineQuery(inlineQueryId string, results []types.InlineQuer
 
 
     r, err := b.Request("answerInlineQuery", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3285,11 +3394,11 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
 
 
     r, err := b.Request("sendInvoice", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -3359,11 +3468,11 @@ func (b *Bot) CreateInvoiceLink(title string, description string, payload string
 
 
     r, err := b.Request("createInvoiceLink", params, data_params)
-	if err != nil {
-		return "", err
-	}
+    if err != nil {
+        return "", err
+    }
 
-	
+    
     var res string
     return res, json.Unmarshal(r, &res) 
 
@@ -3397,11 +3506,11 @@ func (b *Bot) AnswerShippingQuery(shippingQueryId string, ok bool, opts *AnswerS
 
 
     r, err := b.Request("answerShippingQuery", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3425,11 +3534,11 @@ func (b *Bot) AnswerPreCheckoutQuery(preCheckoutQueryId string, ok bool, opts *A
 
 
     r, err := b.Request("answerPreCheckoutQuery", params, data_params)
-	if err != nil {
-		return false, err
-	}
+    if err != nil {
+        return false, err
+    }
 
-	
+    
     var res bool
     return res, json.Unmarshal(r, &res) 
 
@@ -3497,11 +3606,11 @@ func (b *Bot) SendGame(chatId int64, gameShortName string, opts *SendGameOpts) (
 
 
     r, err := b.Request("sendGame", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -3533,11 +3642,11 @@ func (b *Bot) SetGameScore(userId int64, score int64, opts *SetGameScoreOpts) (*
 
 
     r, err := b.Request("setGameScore", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res *types.Message
     return res, json.Unmarshal(r, &res) 
 
@@ -3564,11 +3673,11 @@ func (b *Bot) GetGameHighScores(userId int64, opts *GetGameHighScoresOpts) ([]ty
 
 
     r, err := b.Request("getGameHighScores", params, data_params)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	
+    
     var res []types.GameHighScore
     return res, json.Unmarshal(r, &res) 
 
