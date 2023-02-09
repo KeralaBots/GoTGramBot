@@ -1528,6 +1528,7 @@ func (b *Bot) UnbanChatMember(chatId int64, userId int64, opts *UnbanChatMemberO
 
 // RestrictChatMember methods's optional params
 type RestrictChatMemberOpts struct {
+    UseIndependentChatPermissions bool `json:"use_independent_chat_permissions,omitempty"`
     UntilDate int64 `json:"until_date,omitempty"`
 }
 
@@ -1548,6 +1549,7 @@ func (b *Bot) RestrictChatMember(chatId int64, userId int64, permissions *types.
     }
 
     if opts != nil {
+        params["use_independent_chat_permissions"] = strconv.FormatBool(opts.UseIndependentChatPermissions)
         params["until_date"] = strconv.FormatInt(opts.UntilDate, 10)
     }
 
@@ -1665,10 +1667,16 @@ func (b *Bot) UnbanChatSenderChat(chatId int64, senderChatId int64) (bool, error
 
 }
 
+// SetChatPermissions methods's optional params
+type SetChatPermissionsOpts struct {
+    UseIndependentChatPermissions bool `json:"use_independent_chat_permissions,omitempty"`
+}
+
 // Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success.
-func (b *Bot) SetChatPermissions(chatId int64, permissions *types.ChatPermissions) (bool, error) {
+func (b *Bot) SetChatPermissions(chatId int64, permissions *types.ChatPermissions, opts *SetChatPermissionsOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
 
     if permissions != nil {
@@ -1679,11 +1687,16 @@ func (b *Bot) SetChatPermissions(chatId int64, permissions *types.ChatPermission
         params["permissions"] = string(bs)
     }
 
+    if opts != nil {
+        params["use_independent_chat_permissions"] = strconv.FormatBool(opts.UseIndependentChatPermissions)
+    }
+
 
     r, err := b.Request("setChatPermissions", params, data_params)
     if err != nil {
         return false, err
     }
+
     
     var res bool
     return res, json.Unmarshal(r, &res) 
