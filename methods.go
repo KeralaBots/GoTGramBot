@@ -2063,7 +2063,7 @@ func (b *Bot) GetChatMemberCount(chatId int64) (int64, error) {
 
 }
 
-// Use this method to get information about a member of a chat. The method is guaranteed to work for other users, only if the bot is an administrator in the chat. Returns a ChatMember object on success.
+// Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a ChatMember object on success.
 func (b *Bot) GetChatMember(chatId int64, userId int64) (*types.ChatMember, error) {
     params := map[string]string{}
     data_params := map[string]string{}
