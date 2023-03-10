@@ -434,7 +434,7 @@ type SendAudioOpts struct {
     Duration int64 `json:"duration,omitempty"`
     Performer string `json:"performer,omitempty"`
     Title string `json:"title,omitempty"`
-    Thumb types.InputFile `json:"thumb,omitempty"`
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -481,18 +481,18 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
         params["performer"] = opts.Performer
         params["title"] = opts.Title
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
@@ -525,7 +525,7 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
 // SendDocument methods's optional params
 type SendDocumentOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
-    Thumb types.InputFile `json:"thumb,omitempty"`
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -561,18 +561,18 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
         params["caption"] = opts.Caption
@@ -620,7 +620,7 @@ type SendVideoOpts struct {
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
     Height int64 `json:"height,omitempty"`
-    Thumb types.InputFile `json:"thumb,omitempty"`
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -660,18 +660,18 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
         params["width"] = strconv.FormatInt(opts.Width, 10)
         params["height"] = strconv.FormatInt(opts.Height, 10)
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
         params["caption"] = opts.Caption
@@ -720,7 +720,7 @@ type SendAnimationOpts struct {
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
     Height int64 `json:"height,omitempty"`
-    Thumb types.InputFile `json:"thumb,omitempty"`
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -759,18 +759,18 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
         params["width"] = strconv.FormatInt(opts.Width, 10)
         params["height"] = strconv.FormatInt(opts.Height, 10)
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
         params["caption"] = opts.Caption
@@ -893,7 +893,7 @@ type SendVideoNoteOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Length int64 `json:"length,omitempty"`
-    Thumb types.InputFile `json:"thumb,omitempty"`
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -927,18 +927,18 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["length"] = strconv.FormatInt(opts.Length, 10)
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
@@ -1057,94 +1057,6 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
 
 
     r, err := b.Request("sendLocation", params, data_params)
-    if err != nil {
-        return nil, err
-    }
-
-    
-    var res *types.Message
-    return res, json.Unmarshal(r, &res) 
-
-}
-
-// EditMessageLiveLocation methods's optional params
-type EditMessageLiveLocationOpts struct {
-    ChatId int64 `json:"chat_id,omitempty"`
-    MessageId int64 `json:"message_id,omitempty"`
-    InlineMessageId string `json:"inline_message_id,omitempty"`
-    HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
-    Heading int64 `json:"heading,omitempty"`
-    ProximityAlertRadius int64 `json:"proximity_alert_radius,omitempty"`
-    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
-}
-
-// Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
-func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts *EditMessageLiveLocationOpts) (*types.Message, error) {
-    params := map[string]string{}
-    data_params := map[string]string{}
-
-    params["latitude"] = strconv.FormatFloat(latitude, 'E', -1, 64)
-    params["longitude"] = strconv.FormatFloat(longitude, 'E', -1, 64)
-    if opts != nil {
-        params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
-        params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
-        params["inline_message_id"] = opts.InlineMessageId
-        params["horizontal_accuracy"] = strconv.FormatFloat(opts.HorizontalAccuracy, 'E', -1, 64)
-        params["heading"] = strconv.FormatInt(opts.Heading, 10)
-        params["proximity_alert_radius"] = strconv.FormatInt(opts.ProximityAlertRadius, 10)
-
-        if opts.ReplyMarkup != nil {
-            bs, err := json.Marshal(opts.ReplyMarkup)
-            if err != nil {
-                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
-            }
-            params["reply_markup"] = string(bs)
-        }
-
-    }
-
-
-    r, err := b.Request("editMessageLiveLocation", params, data_params)
-    if err != nil {
-        return nil, err
-    }
-
-    
-    var res *types.Message
-    return res, json.Unmarshal(r, &res) 
-
-}
-
-// StopMessageLiveLocation methods's optional params
-type StopMessageLiveLocationOpts struct {
-    ChatId int64 `json:"chat_id,omitempty"`
-    MessageId int64 `json:"message_id,omitempty"`
-    InlineMessageId string `json:"inline_message_id,omitempty"`
-    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
-}
-
-// Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned.
-func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types.Message, error) {
-    params := map[string]string{}
-    data_params := map[string]string{}
-
-    if opts != nil {
-        params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
-        params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
-        params["inline_message_id"] = opts.InlineMessageId
-
-        if opts.ReplyMarkup != nil {
-            bs, err := json.Marshal(opts.ReplyMarkup)
-            if err != nil {
-                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
-            }
-            params["reply_markup"] = string(bs)
-        }
-
-    }
-
-
-    r, err := b.Request("stopMessageLiveLocation", params, data_params)
     if err != nil {
         return nil, err
     }
@@ -2487,6 +2399,114 @@ func (b *Bot) GetMyCommands(opts *GetMyCommandsOpts) ([]types.BotCommand, error)
 
 }
 
+// SetMyDescription methods's optional params
+type SetMyDescriptionOpts struct {
+    Description string `json:"description,omitempty"`
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns True on success.
+func (b *Bot) SetMyDescription(opts *SetMyDescriptionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["description"] = opts.Description
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("setMyDescription", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetMyDescription methods's optional params
+type GetMyDescriptionOpts struct {
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to get the current bot description for the given user language. Returns BotDescription on success.
+func (b *Bot) GetMyDescription(opts *GetMyDescriptionOpts) (*types.BotDescription, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("getMyDescription", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.BotDescription
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetMyShortDescription methods's optional params
+type SetMyShortDescriptionOpts struct {
+    ShortDescription string `json:"short_description,omitempty"`
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns True on success.
+func (b *Bot) SetMyShortDescription(opts *SetMyShortDescriptionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["short_description"] = opts.ShortDescription
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("setMyShortDescription", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetMyShortDescription methods's optional params
+type GetMyShortDescriptionOpts struct {
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to get the current bot short description for the given user language. Returns BotShortDescription on success.
+func (b *Bot) GetMyShortDescription(opts *GetMyShortDescriptionOpts) (*types.BotShortDescription, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("getMyShortDescription", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.BotShortDescription
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SetChatMenuButton methods's optional params
 type SetChatMenuButtonOpts struct {
     ChatId int64 `json:"chat_id,omitempty"`
@@ -2769,6 +2789,94 @@ func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOp
 
 }
 
+// EditMessageLiveLocation methods's optional params
+type EditMessageLiveLocationOpts struct {
+    ChatId int64 `json:"chat_id,omitempty"`
+    MessageId int64 `json:"message_id,omitempty"`
+    InlineMessageId string `json:"inline_message_id,omitempty"`
+    HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
+    Heading int64 `json:"heading,omitempty"`
+    ProximityAlertRadius int64 `json:"proximity_alert_radius,omitempty"`
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts *EditMessageLiveLocationOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["latitude"] = strconv.FormatFloat(latitude, 'E', -1, 64)
+    params["longitude"] = strconv.FormatFloat(longitude, 'E', -1, 64)
+    if opts != nil {
+        params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
+        params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
+        params["inline_message_id"] = opts.InlineMessageId
+        params["horizontal_accuracy"] = strconv.FormatFloat(opts.HorizontalAccuracy, 'E', -1, 64)
+        params["heading"] = strconv.FormatInt(opts.Heading, 10)
+        params["proximity_alert_radius"] = strconv.FormatInt(opts.ProximityAlertRadius, 10)
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editMessageLiveLocation", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// StopMessageLiveLocation methods's optional params
+type StopMessageLiveLocationOpts struct {
+    ChatId int64 `json:"chat_id,omitempty"`
+    MessageId int64 `json:"message_id,omitempty"`
+    InlineMessageId string `json:"inline_message_id,omitempty"`
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned.
+func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
+        params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
+        params["inline_message_id"] = opts.InlineMessageId
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("stopMessageLiveLocation", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // EditMessageReplyMarkup methods's optional params
 type EditMessageReplyMarkupOpts struct {
     ChatId int64 `json:"chat_id,omitempty"`
@@ -2874,6 +2982,7 @@ func (b *Bot) DeleteMessage(chatId int64, messageId int64) (bool, error) {
 // SendSticker methods's optional params
 type SendStickerOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyToMessageId int64 `json:"reply_to_message_id,omitempty"`
@@ -2904,6 +3013,7 @@ func (b *Bot) SendSticker(chatId int64, sticker types.InputFile, opts *SendStick
     }
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["reply_to_message_id"] = strconv.FormatInt(opts.ReplyToMessageId, 10)
@@ -2971,26 +3081,27 @@ func (b *Bot) GetCustomEmojiStickers(customEmojiIds []string) ([]types.Sticker, 
 
 }
 
-// Use this method to upload a .PNG file with a sticker for later use in createNewStickerSet and addStickerToSet methods (can be used multiple times). Returns the uploaded File on success.
-func (b *Bot) UploadStickerFile(userId int64, pngSticker types.InputFile) (*types.File, error) {
+// Use this method to upload a file with a sticker for later use in the createNewStickerSet and addStickerToSet methods (the file can be used multiple times). Returns the uploaded File on success.
+func (b *Bot) UploadStickerFile(userId int64, sticker types.InputFile, stickerFormat string) (*types.File, error) {
     params := map[string]string{}
     data_params := map[string]string{}
     params["user_id"] = strconv.FormatInt(userId, 10)
 
-    if pngSticker != nil {
-        switch f := pngSticker.(type) {
+    if sticker != nil {
+        switch f := sticker.(type) {
         case string:
             _, err := os.Stat(f)
             if err != nil {
-                params["png_sticker"] = f
+                params["sticker"] = f
             } else {
-                params["png_sticker"] = "attach://png_sticker"
-                data_params["png_sticker"] = f
+                params["sticker"] = "attach://sticker"
+                data_params["sticker"] = f
             }
         default:
-            return nil, fmt.Errorf("unknown type for InputFile: %T", pngSticker)
+            return nil, fmt.Errorf("unknown type for InputFile: %T", sticker)
         }
     }
+    params["sticker_format"] = stickerFormat
 
     r, err := b.Request("uploadStickerFile", params, data_params)
     if err != nil {
@@ -3004,78 +3115,31 @@ func (b *Bot) UploadStickerFile(userId int64, pngSticker types.InputFile) (*type
 
 // CreateNewStickerSet methods's optional params
 type CreateNewStickerSetOpts struct {
-    PngSticker types.InputFile `json:"png_sticker,omitempty"`
-    TgsSticker types.InputFile `json:"tgs_sticker,omitempty"`
-    WebmSticker types.InputFile `json:"webm_sticker,omitempty"`
     StickerType string `json:"sticker_type,omitempty"`
-    MaskPosition *types.MaskPosition `json:"mask_position,omitempty"`
+    NeedsRepainting bool `json:"needs_repainting,omitempty"`
 }
 
-// Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Returns True on success.
-func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, emojis string, opts *CreateNewStickerSetOpts) (bool, error) {
+// Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
+func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, stickers []types.InputSticker, stickerFormat string, opts *CreateNewStickerSetOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     params["user_id"] = strconv.FormatInt(userId, 10)
     params["name"] = name
     params["title"] = title
-    params["emojis"] = emojis
+
+    if stickers != nil {
+        bs, err := json.Marshal(stickers)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field stickers: %w", err)
+        }
+        params["stickers"] = string(bs)
+    }
+
+    params["sticker_format"] = stickerFormat
     if opts != nil {
-
-        if opts.PngSticker != nil {
-            switch f := opts.PngSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["png_sticker"] = f
-                } else {
-                    params["png_sticker"] = "attach://png_sticker"
-                    data_params["png_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.PngSticker)
-            }
-        }
-
-        if opts.TgsSticker != nil {
-            switch f := opts.TgsSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["tgs_sticker"] = f
-                } else {
-                    params["tgs_sticker"] = "attach://tgs_sticker"
-                    data_params["tgs_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.TgsSticker)
-            }
-        }
-
-        if opts.WebmSticker != nil {
-            switch f := opts.WebmSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["webm_sticker"] = f
-                } else {
-                    params["webm_sticker"] = "attach://webm_sticker"
-                    data_params["webm_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.WebmSticker)
-            }
-        }
         params["sticker_type"] = opts.StickerType
-
-        if opts.MaskPosition != nil {
-            bs, err := json.Marshal(opts.MaskPosition)
-            if err != nil {
-                return false, fmt.Errorf("failed to marshal field mask_position: %w", err)
-            }
-            params["mask_position"] = string(bs)
-        }
-
+        params["needs_repainting"] = strconv.FormatBool(opts.NeedsRepainting)
     }
 
 
@@ -3090,77 +3154,19 @@ func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, emoji
 
 }
 
-// AddStickerToSet methods's optional params
-type AddStickerToSetOpts struct {
-    PngSticker types.InputFile `json:"png_sticker,omitempty"`
-    TgsSticker types.InputFile `json:"tgs_sticker,omitempty"`
-    WebmSticker types.InputFile `json:"webm_sticker,omitempty"`
-    MaskPosition *types.MaskPosition `json:"mask_position,omitempty"`
-}
-
-// Use this method to add a new sticker to a set created by the bot. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Animated stickers can be added to animated sticker sets and only to them. Animated sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success.
-func (b *Bot) AddStickerToSet(userId int64, name string, emojis string, opts *AddStickerToSetOpts) (bool, error) {
+// Use this method to add a new sticker to a set created by the bot. The format of the added sticker must match the format of the other stickers in the set. Emoji sticker sets can have up to 200 stickers. Animated and video sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success.
+func (b *Bot) AddStickerToSet(userId int64, name string, sticker *types.InputSticker) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
-
     params["user_id"] = strconv.FormatInt(userId, 10)
     params["name"] = name
-    params["emojis"] = emojis
-    if opts != nil {
 
-        if opts.PngSticker != nil {
-            switch f := opts.PngSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["png_sticker"] = f
-                } else {
-                    params["png_sticker"] = "attach://png_sticker"
-                    data_params["png_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.PngSticker)
-            }
+    if sticker != nil {
+        bs, err := json.Marshal(sticker)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field sticker: %w", err)
         }
-
-        if opts.TgsSticker != nil {
-            switch f := opts.TgsSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["tgs_sticker"] = f
-                } else {
-                    params["tgs_sticker"] = "attach://tgs_sticker"
-                    data_params["tgs_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.TgsSticker)
-            }
-        }
-
-        if opts.WebmSticker != nil {
-            switch f := opts.WebmSticker.(type) {
-            case string:
-                _, err := os.Stat(f)
-                if err != nil {
-                    params["webm_sticker"] = f
-                } else {
-                    params["webm_sticker"] = "attach://webm_sticker"
-                    data_params["webm_sticker"] = f
-                }
-            default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.WebmSticker)
-            }
-        }
-
-        if opts.MaskPosition != nil {
-            bs, err := json.Marshal(opts.MaskPosition)
-            if err != nil {
-                return false, fmt.Errorf("failed to marshal field mask_position: %w", err)
-            }
-            params["mask_position"] = string(bs)
-        }
-
+        params["sticker"] = string(bs)
     }
 
 
@@ -3168,7 +3174,6 @@ func (b *Bot) AddStickerToSet(userId int64, name string, emojis string, opts *Ad
     if err != nil {
         return false, err
     }
-
     
     var res bool
     return res, json.Unmarshal(r, &res) 
@@ -3208,13 +3213,125 @@ func (b *Bot) DeleteStickerFromSet(sticker string) (bool, error) {
 
 }
 
-// SetStickerSetThumb methods's optional params
-type SetStickerSetThumbOpts struct {
-    Thumb types.InputFile `json:"thumb,omitempty"`
+// Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
+func (b *Bot) SetStickerEmojiList(sticker string, emojiList []string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["sticker"] = sticker
+
+    if emojiList != nil {
+        bs, err := json.Marshal(emojiList)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field emoji_list: %w", err)
+        }
+        params["emoji_list"] = string(bs)
+    }
+
+
+    r, err := b.Request("setStickerEmojiList", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
 }
 
-// Use this method to set the thumbnail of a sticker set. Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only. Returns True on success.
-func (b *Bot) SetStickerSetThumb(name string, userId int64, opts *SetStickerSetThumbOpts) (bool, error) {
+// SetStickerKeywords methods's optional params
+type SetStickerKeywordsOpts struct {
+    Keywords []string `json:"keywords,omitempty"`
+}
+
+// Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
+func (b *Bot) SetStickerKeywords(sticker string, opts *SetStickerKeywordsOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["sticker"] = sticker
+    if opts != nil {
+
+        if opts.Keywords != nil {
+            bs, err := json.Marshal(opts.Keywords)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field keywords: %w", err)
+            }
+            params["keywords"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("setStickerKeywords", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetStickerMaskPosition methods's optional params
+type SetStickerMaskPositionOpts struct {
+    MaskPosition *types.MaskPosition `json:"mask_position,omitempty"`
+}
+
+// Use this method to change the mask position of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns True on success.
+func (b *Bot) SetStickerMaskPosition(sticker string, opts *SetStickerMaskPositionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["sticker"] = sticker
+    if opts != nil {
+
+        if opts.MaskPosition != nil {
+            bs, err := json.Marshal(opts.MaskPosition)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field mask_position: %w", err)
+            }
+            params["mask_position"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("setStickerMaskPosition", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to set the title of a created sticker set. Returns True on success.
+func (b *Bot) SetStickerSetTitle(name string, title string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["name"] = name
+    params["title"] = title
+
+    r, err := b.Request("setStickerSetTitle", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetStickerSetThumbnail methods's optional params
+type SetStickerSetThumbnailOpts struct {
+    Thumbnail types.InputFile `json:"thumbnail,omitempty"`
+}
+
+// Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
+func (b *Bot) SetStickerSetThumbnail(name string, userId int64, opts *SetStickerSetThumbnailOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
@@ -3222,28 +3339,71 @@ func (b *Bot) SetStickerSetThumb(name string, userId int64, opts *SetStickerSetT
     params["user_id"] = strconv.FormatInt(userId, 10)
     if opts != nil {
 
-        if opts.Thumb != nil {
-            switch f := opts.Thumb.(type) {
+        if opts.Thumbnail != nil {
+            switch f := opts.Thumbnail.(type) {
             case string:
                 _, err := os.Stat(f)
                 if err != nil {
-                    params["thumb"] = f
+                    params["thumbnail"] = f
                 } else {
-                    params["thumb"] = "attach://thumb"
-                    data_params["thumb"] = f
+                    params["thumbnail"] = "attach://thumbnail"
+                    data_params["thumbnail"] = f
                 }
             default:
-                return false, fmt.Errorf("unknown type for InputFile: %T", opts.Thumb)
+                return false, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
     }
 
 
-    r, err := b.Request("setStickerSetThumb", params, data_params)
+    r, err := b.Request("setStickerSetThumbnail", params, data_params)
     if err != nil {
         return false, err
     }
 
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetCustomEmojiStickerSetThumbnail methods's optional params
+type SetCustomEmojiStickerSetThumbnailOpts struct {
+    CustomEmojiId string `json:"custom_emoji_id,omitempty"`
+}
+
+// Use this method to set the thumbnail of a custom emoji sticker set. Returns True on success.
+func (b *Bot) SetCustomEmojiStickerSetThumbnail(name string, opts *SetCustomEmojiStickerSetThumbnailOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["name"] = name
+    if opts != nil {
+        params["custom_emoji_id"] = opts.CustomEmojiId
+    }
+
+
+    r, err := b.Request("setCustomEmojiStickerSetThumbnail", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to delete a sticker set that was created by the bot. Returns True on success.
+func (b *Bot) DeleteStickerSet(name string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["name"] = name
+
+    r, err := b.Request("deleteStickerSet", params, data_params)
+    if err != nil {
+        return false, err
+    }
     
     var res bool
     return res, json.Unmarshal(r, &res) 
