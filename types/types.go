@@ -760,7 +760,7 @@ type KeyboardButton struct {
 }
 
 
-// This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed.
+// This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed. More about requesting users: https://core.telegram.org/bots/features#chat-and-user-selection
 type KeyboardButtonRequestUser struct {
     // Signed 32-bit identifier of the request, which will be received back in the UserShared object. Must be unique within the message
     RequestId int64 `json:"request_id"`
@@ -771,7 +771,7 @@ type KeyboardButtonRequestUser struct {
 }
 
 
-// This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed.
+// This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed. More about requesting chats: https://core.telegram.org/bots/features#chat-and-user-selection
 type KeyboardButtonRequestChat struct {
     // Signed 32-bit identifier of the request, which will be received back in the ChatShared object. Must be unique within the message
     RequestId int64 `json:"request_id"`
@@ -1616,7 +1616,7 @@ type MaskPosition struct {
 
 // This object describes a sticker to be added to a sticker set.
 type InputSticker struct {
-    // The added sticker. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. Animated and video stickers can't be uploaded via HTTP URL. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    // The added sticker. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, upload a new one using multipart/form-data, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. Animated and video stickers can't be uploaded via HTTP URL. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
     Sticker string `json:"sticker"`
     // List of 1-20 emoji associated with the sticker
     EmojiList []string `json:"emoji_list"`
