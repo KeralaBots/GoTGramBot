@@ -2399,6 +2399,60 @@ func (b *Bot) GetMyCommands(opts *GetMyCommandsOpts) ([]types.BotCommand, error)
 
 }
 
+// SetMyName methods's optional params
+type SetMyNameOpts struct {
+    Name string `json:"name,omitempty"`
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to change the bot's name. Returns True on success.
+func (b *Bot) SetMyName(opts *SetMyNameOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["name"] = opts.Name
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("setMyName", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetMyName methods's optional params
+type GetMyNameOpts struct {
+    LanguageCode string `json:"language_code,omitempty"`
+}
+
+// Use this method to get the current bot name for the given user language. Returns BotName on success.
+func (b *Bot) GetMyName(opts *GetMyNameOpts) (*types.BotName, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["language_code"] = opts.LanguageCode
+    }
+
+
+    r, err := b.Request("getMyName", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.BotName
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SetMyDescription methods's optional params
 type SetMyDescriptionOpts struct {
     Description string `json:"description,omitempty"`
@@ -3415,8 +3469,7 @@ type AnswerInlineQueryOpts struct {
     CacheTime int64 `json:"cache_time,omitempty"`
     IsPersonal bool `json:"is_personal,omitempty"`
     NextOffset string `json:"next_offset,omitempty"`
-    SwitchPmText string `json:"switch_pm_text,omitempty"`
-    SwitchPmParameter string `json:"switch_pm_parameter,omitempty"`
+    Button *types.InlineQueryResultsButton `json:"button,omitempty"`
 }
 
 // Use this method to send answers to an inline query. On success, True is returned.
@@ -3439,8 +3492,15 @@ func (b *Bot) AnswerInlineQuery(inlineQueryId string, results []types.InlineQuer
         params["cache_time"] = strconv.FormatInt(opts.CacheTime, 10)
         params["is_personal"] = strconv.FormatBool(opts.IsPersonal)
         params["next_offset"] = opts.NextOffset
-        params["switch_pm_text"] = opts.SwitchPmText
-        params["switch_pm_parameter"] = opts.SwitchPmParameter
+
+        if opts.Button != nil {
+            bs, err := json.Marshal(opts.Button)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field button: %w", err)
+            }
+            params["button"] = string(bs)
+        }
+
     }
 
 
