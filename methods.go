@@ -1481,15 +1481,18 @@ func (b *Bot) RestrictChatMember(chatId int64, userId int64, permissions *types.
 type PromoteChatMemberOpts struct {
     IsAnonymous bool `json:"is_anonymous,omitempty"`
     CanManageChat bool `json:"can_manage_chat,omitempty"`
-    CanPostMessages bool `json:"can_post_messages,omitempty"`
-    CanEditMessages bool `json:"can_edit_messages,omitempty"`
     CanDeleteMessages bool `json:"can_delete_messages,omitempty"`
     CanManageVideoChats bool `json:"can_manage_video_chats,omitempty"`
     CanRestrictMembers bool `json:"can_restrict_members,omitempty"`
     CanPromoteMembers bool `json:"can_promote_members,omitempty"`
     CanChangeInfo bool `json:"can_change_info,omitempty"`
     CanInviteUsers bool `json:"can_invite_users,omitempty"`
+    CanPostMessages bool `json:"can_post_messages,omitempty"`
+    CanEditMessages bool `json:"can_edit_messages,omitempty"`
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
+    CanPostStories bool `json:"can_post_stories,omitempty"`
+    CanEditStories bool `json:"can_edit_stories,omitempty"`
+    CanDeleteStories bool `json:"can_delete_stories,omitempty"`
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
 }
 
@@ -1503,15 +1506,18 @@ func (b *Bot) PromoteChatMember(chatId int64, userId int64, opts *PromoteChatMem
     if opts != nil {
         params["is_anonymous"] = strconv.FormatBool(opts.IsAnonymous)
         params["can_manage_chat"] = strconv.FormatBool(opts.CanManageChat)
-        params["can_post_messages"] = strconv.FormatBool(opts.CanPostMessages)
-        params["can_edit_messages"] = strconv.FormatBool(opts.CanEditMessages)
         params["can_delete_messages"] = strconv.FormatBool(opts.CanDeleteMessages)
         params["can_manage_video_chats"] = strconv.FormatBool(opts.CanManageVideoChats)
         params["can_restrict_members"] = strconv.FormatBool(opts.CanRestrictMembers)
         params["can_promote_members"] = strconv.FormatBool(opts.CanPromoteMembers)
         params["can_change_info"] = strconv.FormatBool(opts.CanChangeInfo)
         params["can_invite_users"] = strconv.FormatBool(opts.CanInviteUsers)
+        params["can_post_messages"] = strconv.FormatBool(opts.CanPostMessages)
+        params["can_edit_messages"] = strconv.FormatBool(opts.CanEditMessages)
         params["can_pin_messages"] = strconv.FormatBool(opts.CanPinMessages)
+        params["can_post_stories"] = strconv.FormatBool(opts.CanPostStories)
+        params["can_edit_stories"] = strconv.FormatBool(opts.CanEditStories)
+        params["can_delete_stories"] = strconv.FormatBool(opts.CanDeleteStories)
         params["can_manage_topics"] = strconv.FormatBool(opts.CanManageTopics)
     }
 
@@ -2240,6 +2246,22 @@ func (b *Bot) UnhideGeneralForumTopic(chatId int64) (bool, error) {
     params["chat_id"] = strconv.FormatInt(chatId, 10)
 
     r, err := b.Request("unhideGeneralForumTopic", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+func (b *Bot) UnpinAllGeneralForumTopicMessages(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("unpinAllGeneralForumTopicMessages", params, data_params)
     if err != nil {
         return false, err
     }
