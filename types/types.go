@@ -111,6 +111,8 @@ type Chat struct {
     ActiveUsernames []string `json:"active_usernames,omitempty"`
     // Optional. Custom emoji identifier of emoji status of the other party in a private chat. Returned only in getChat.
     EmojiStatusCustomEmojiId string `json:"emoji_status_custom_emoji_id,omitempty"`
+    // Optional. Expiration date of the emoji status of the other party in a private chat in Unix time, if any. Returned only in getChat.
+    EmojiStatusExpirationDate int64 `json:"emoji_status_expiration_date,omitempty"`
     // Optional. Bio of the other party in a private chat. Returned only in getChat.
     Bio string `json:"bio,omitempty"`
     // Optional. True, if privacy settings of the other party in the private chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
@@ -206,6 +208,8 @@ type Message struct {
     Photo []PhotoSize `json:"photo,omitempty"`
     // Optional. Message is a sticker, information about the sticker
     Sticker *Sticker `json:"sticker,omitempty"`
+    // Optional. Message is a forwarded story
+    Story *Story `json:"story,omitempty"`
     // Optional. Message is a video, information about the video
     Video *Video `json:"video,omitempty"`
     // Optional. Message is a video note, information about the video message
@@ -264,7 +268,7 @@ type Message struct {
     ChatShared *ChatShared `json:"chat_shared,omitempty"`
     // Optional. The domain name of the website on which the user has logged in. More about Telegram Login: https://core.telegram.org/widgets/login
     ConnectedWebsite string `json:"connected_website,omitempty"`
-    // Optional. Service message: the user allowed the bot added to the attachment menu to write messages
+    // Optional. Service message: the user allowed the bot to write messages after adding it to the attachment or side menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess
     WriteAccessAllowed *WriteAccessAllowed `json:"write_access_allowed,omitempty"`
     // Optional. Telegram Passport data
     PassportData *PassportData `json:"passport_data,omitempty"`
@@ -401,6 +405,12 @@ type Document struct {
 }
 
 
+// This object represents a message about a forwarded story in the chat. Currently holds no information.
+type Story interface {
+
+}
+
+
 // This object represents a video file.
 type Video struct {
     // Identifier for this file, which can be used to download or reuse the file
@@ -493,9 +503,11 @@ type PollOption struct {
 type PollAnswer struct {
     // Unique poll identifier
     PollId string `json:"poll_id"`
-    // The user, who changed the answer to the poll
-    User *User `json:"user"`
-    // 0-based identifiers of answer options, chosen by the user. May be empty if the user retracted their vote.
+    // Optional. The chat that changed the answer to the poll, if the voter is anonymous
+    VoterChat *Chat `json:"voter_chat,omitempty"`
+    // Optional. The user that changed the answer to the poll, if the voter isn't anonymous
+    User *User `json:"user,omitempty"`
+    // 0-based identifiers of chosen answer options. May be empty if the vote was retracted.
     OptionIds []int64 `json:"option_ids"`
 }
 
@@ -656,10 +668,14 @@ type ChatShared struct {
 }
 
 
-// This object represents a service message about a user allowing a bot to write messages after adding the bot to the attachment menu or launching a Web App from a link.
+// This object represents a service message about a user allowing a bot to write messages after adding it to the attachment menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess.
 type WriteAccessAllowed struct {
-    // Optional. Name of the Web App which was launched from a link
+    // Optional. True, if the access was granted after the user accepted an explicit request from a Web App sent by the method requestWriteAccess
+    FromRequest bool `json:"from_request,omitempty"`
+    // Optional. Name of the Web App, if the access was granted when the Web App was launched from a link
     WebAppName string `json:"web_app_name,omitempty"`
+    // Optional. True, if the access was granted when the bot was added to the attachment or side menu
+    FromAttachmentMenu bool `json:"from_attachment_menu,omitempty"`
 }
 
 
@@ -947,13 +963,13 @@ type ChatInviteLink struct {
 type ChatAdministratorRights struct {
     // True, if the user's presence in the chat is hidden
     IsAnonymous bool `json:"is_anonymous"`
-    // True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
+    // True, if the administrator can access the chat event log, boost list in channels, see channel members, report spam messages, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
     CanManageChat bool `json:"can_manage_chat"`
     // True, if the administrator can delete messages of other users
     CanDeleteMessages bool `json:"can_delete_messages"`
     // True, if the administrator can manage video chats
     CanManageVideoChats bool `json:"can_manage_video_chats"`
-    // True, if the administrator can restrict, ban or unban chat members
+    // True, if the administrator can restrict, ban or unban chat members, or access supergroup statistics
     CanRestrictMembers bool `json:"can_restrict_members"`
     // True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that they have promoted, directly or indirectly (promoted by administrators that were appointed by the user)
     CanPromoteMembers bool `json:"can_promote_members"`
@@ -961,12 +977,18 @@ type ChatAdministratorRights struct {
     CanChangeInfo bool `json:"can_change_info"`
     // True, if the user is allowed to invite new users to the chat
     CanInviteUsers bool `json:"can_invite_users"`
-    // Optional. True, if the administrator can post in the channel; channels only
+    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; channels only
     CanPostMessages bool `json:"can_post_messages,omitempty"`
     // Optional. True, if the administrator can edit messages of other users and can pin messages; channels only
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
     // Optional. True, if the user is allowed to pin messages; groups and supergroups only
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
+    // Optional. True, if the administrator can post stories in the channel; channels only
+    CanPostStories bool `json:"can_post_stories,omitempty"`
+    // Optional. True, if the administrator can edit stories posted by other users; channels only
+    CanEditStories bool `json:"can_edit_stories,omitempty"`
+    // Optional. True, if the administrator can delete stories posted by other users; channels only
+    CanDeleteStories bool `json:"can_delete_stories,omitempty"`
     // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; supergroups only
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
 }
@@ -995,6 +1017,9 @@ type ChatMember struct {
     CanPostMessages bool `json:"can_post_messages,omitempty"`
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
+    CanPostStories bool `json:"can_post_stories,omitempty"`
+    CanEditStories bool `json:"can_edit_stories,omitempty"`
+    CanDeleteStories bool `json:"can_delete_stories,omitempty"`
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
     IsMember bool `json:"is_member"`
     CanSendMessages bool `json:"can_send_messages"`
@@ -1037,13 +1062,13 @@ type ChatMemberAdministrator struct {
     CanBeEdited bool `json:"can_be_edited"`
     // True, if the user's presence in the chat is hidden
     IsAnonymous bool `json:"is_anonymous"`
-    // True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
+    // True, if the administrator can access the chat event log, boost list in channels, see channel members, report spam messages, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
     CanManageChat bool `json:"can_manage_chat"`
     // True, if the administrator can delete messages of other users
     CanDeleteMessages bool `json:"can_delete_messages"`
     // True, if the administrator can manage video chats
     CanManageVideoChats bool `json:"can_manage_video_chats"`
-    // True, if the administrator can restrict, ban or unban chat members
+    // True, if the administrator can restrict, ban or unban chat members, or access supergroup statistics
     CanRestrictMembers bool `json:"can_restrict_members"`
     // True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that they have promoted, directly or indirectly (promoted by administrators that were appointed by the user)
     CanPromoteMembers bool `json:"can_promote_members"`
@@ -1051,12 +1076,18 @@ type ChatMemberAdministrator struct {
     CanChangeInfo bool `json:"can_change_info"`
     // True, if the user is allowed to invite new users to the chat
     CanInviteUsers bool `json:"can_invite_users"`
-    // Optional. True, if the administrator can post in the channel; channels only
+    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; channels only
     CanPostMessages bool `json:"can_post_messages,omitempty"`
     // Optional. True, if the administrator can edit messages of other users and can pin messages; channels only
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
     // Optional. True, if the user is allowed to pin messages; groups and supergroups only
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
+    // Optional. True, if the administrator can post stories in the channel; channels only
+    CanPostStories bool `json:"can_post_stories,omitempty"`
+    // Optional. True, if the administrator can edit stories posted by other users; channels only
+    CanEditStories bool `json:"can_edit_stories,omitempty"`
+    // Optional. True, if the administrator can delete stories posted by other users; channels only
+    CanDeleteStories bool `json:"can_delete_stories,omitempty"`
     // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; supergroups only
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
     // Optional. Custom title for this user
@@ -1115,7 +1146,7 @@ type ChatMemberRestricted struct {
     CanPinMessages bool `json:"can_pin_messages"`
     // True, if the user is allowed to create forum topics
     CanManageTopics bool `json:"can_manage_topics"`
-    // Date when restrictions will be lifted for this user; unix time. If 0, then the user is restricted forever
+    // Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever
     UntilDate int64 `json:"until_date"`
 }
 
@@ -1141,7 +1172,7 @@ type ChatMemberBanned struct {
     Status string `json:"status"`
     // Information about the user
     User *User `json:"user"`
-    // Date when restrictions will be lifted for this user; unix time. If 0, then the user is banned forever
+    // Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever
     UntilDate int64 `json:"until_date"`
 }
 
@@ -1174,7 +1205,7 @@ type ChatJoinRequest struct {
     Chat *Chat `json:"chat"`
     // User that sent the join request
     From *User `json:"from"`
-    // Identifier of a private chat with the user who sent the join request. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier. The bot can use this identifier for 24 hours to send messages until the join request is processed, assuming no other administrator contacted the user.
+    // Identifier of a private chat with the user who sent the join request. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier. The bot can use this identifier for 5 minutes to send messages until the join request is processed, assuming no other administrator contacted the user.
     UserChatId int64 `json:"user_chat_id"`
     // Date the request was sent in Unix time
     Date int64 `json:"date"`
