@@ -16,6 +16,10 @@ type Update struct {
     ChannelPost *Message `json:"channel_post,omitempty"`
     // Optional. New version of a channel post that is known to the bot and was edited
     EditedChannelPost *Message `json:"edited_channel_post,omitempty"`
+    // Optional. A reaction to a message was changed by a user. The bot must be an administrator in the chat and must explicitly specify "message_reaction" in the list of allowed_updates to receive these updates. The update isn't received for reactions set by bots.
+    MessageReaction *MessageReactionUpdated `json:"message_reaction,omitempty"`
+    // Optional. Reactions to a message with anonymous reactions were changed. The bot must be an administrator in the chat and must explicitly specify "message_reaction_count" in the list of allowed_updates to receive these updates.
+    MessageReactionCount *MessageReactionCountUpdated `json:"message_reaction_count,omitempty"`
     // Optional. New incoming inline query
     InlineQuery *InlineQuery `json:"inline_query,omitempty"`
     // Optional. The result of an inline query that was chosen by a user and sent to their chat partner. Please see our documentation on the feedback collecting for details on how to enable these updates for your bot.
@@ -36,6 +40,10 @@ type Update struct {
     ChatMember *ChatMemberUpdated `json:"chat_member,omitempty"`
     // Optional. A request to join the chat has been sent. The bot must have the can_invite_users administrator right in the chat to receive these updates.
     ChatJoinRequest *ChatJoinRequest `json:"chat_join_request,omitempty"`
+    // Optional. A chat boost was added or changed. The bot must be an administrator in the chat to receive these updates.
+    ChatBoost *ChatBoostUpdated `json:"chat_boost,omitempty"`
+    // Optional. A boost was removed from a chat. The bot must be an administrator in the chat to receive these updates.
+    RemovedChatBoost *ChatBoostRemoved `json:"removed_chat_boost,omitempty"`
 }
 
 
@@ -109,9 +117,19 @@ type Chat struct {
     Photo *ChatPhoto `json:"photo,omitempty"`
     // Optional. If non-empty, the list of all active chat usernames; for private chats, supergroups and channels. Returned only in getChat.
     ActiveUsernames []string `json:"active_usernames,omitempty"`
-    // Optional. Custom emoji identifier of emoji status of the other party in a private chat. Returned only in getChat.
+    // Optional. List of available reactions allowed in the chat. If omitted, then all emoji reactions are allowed. Returned only in getChat.
+    AvailableReactions []ReactionType `json:"available_reactions,omitempty"`
+    // Optional. Identifier of the accent color for the chat name and backgrounds of the chat photo, reply header, and link preview. See accent colors for more details. Returned only in getChat. Always returned in getChat.
+    AccentColorId int64 `json:"accent_color_id,omitempty"`
+    // Optional. Custom emoji identifier of emoji chosen by the chat for the reply header and link preview background. Returned only in getChat.
+    BackgroundCustomEmojiId string `json:"background_custom_emoji_id,omitempty"`
+    // Optional. Identifier of the accent color for the chat's profile background. See profile accent colors for more details. Returned only in getChat.
+    ProfileAccentColorId int64 `json:"profile_accent_color_id,omitempty"`
+    // Optional. Custom emoji identifier of the emoji chosen by the chat for its profile background. Returned only in getChat.
+    ProfileBackgroundCustomEmojiId string `json:"profile_background_custom_emoji_id,omitempty"`
+    // Optional. Custom emoji identifier of the emoji status of the chat or the other party in a private chat. Returned only in getChat.
     EmojiStatusCustomEmojiId string `json:"emoji_status_custom_emoji_id,omitempty"`
-    // Optional. Expiration date of the emoji status of the other party in a private chat in Unix time, if any. Returned only in getChat.
+    // Optional. Expiration date of the emoji status of the chat or the other party in a private chat, in Unix time, if any. Returned only in getChat.
     EmojiStatusExpirationDate int64 `json:"emoji_status_expiration_date,omitempty"`
     // Optional. Bio of the other party in a private chat. Returned only in getChat.
     Bio string `json:"bio,omitempty"`
@@ -141,6 +159,8 @@ type Chat struct {
     HasHiddenMembers bool `json:"has_hidden_members,omitempty"`
     // Optional. True, if messages from the chat can't be forwarded to other chats. Returned only in getChat.
     HasProtectedContent bool `json:"has_protected_content,omitempty"`
+    // Optional. True, if new chat members will have access to old messages; available only to chat administrators. Returned only in getChat.
+    HasVisibleHistory bool `json:"has_visible_history,omitempty"`
     // Optional. For supergroups, name of group sticker set. Returned only in getChat.
     StickerSetName string `json:"sticker_set_name,omitempty"`
     // Optional. True, if the bot can change the group sticker set. Returned only in getChat.
@@ -162,28 +182,22 @@ type Message struct {
     From *User `json:"from,omitempty"`
     // Optional. Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group. For backward compatibility, the field from contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat.
     SenderChat *Chat `json:"sender_chat,omitempty"`
-    // Date the message was sent in Unix time
+    // Date the message was sent in Unix time. It is always a positive number, representing a valid date.
     Date int64 `json:"date"`
-    // Conversation the message belongs to
+    // Chat the message belongs to
     Chat *Chat `json:"chat"`
-    // Optional. For forwarded messages, sender of the original message
-    ForwardFrom *User `json:"forward_from,omitempty"`
-    // Optional. For messages forwarded from channels or from anonymous administrators, information about the original sender chat
-    ForwardFromChat *Chat `json:"forward_from_chat,omitempty"`
-    // Optional. For messages forwarded from channels, identifier of the original message in the channel
-    ForwardFromMessageId int64 `json:"forward_from_message_id,omitempty"`
-    // Optional. For forwarded messages that were originally sent in channels or by an anonymous chat administrator, signature of the message sender if present
-    ForwardSignature string `json:"forward_signature,omitempty"`
-    // Optional. Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages
-    ForwardSenderName string `json:"forward_sender_name,omitempty"`
-    // Optional. For forwarded messages, date the original message was sent in Unix time
-    ForwardDate int64 `json:"forward_date,omitempty"`
+    // Optional. Information about the original message for forwarded messages
+    ForwardOrigin *MessageOrigin `json:"forward_origin,omitempty"`
     // Optional. True, if the message is sent to a forum topic
     IsTopicMessage bool `json:"is_topic_message,omitempty"`
     // Optional. True, if the message is a channel post that was automatically forwarded to the connected discussion group
     IsAutomaticForward bool `json:"is_automatic_forward,omitempty"`
-    // Optional. For replies, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply.
+    // Optional. For replies in the same chat and message thread, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply.
     ReplyToMessage *Message `json:"reply_to_message,omitempty"`
+    // Optional. Information about the message that is being replied to, which may come from another chat or forum topic
+    ExternalReply *ExternalReplyInfo `json:"external_reply,omitempty"`
+    // Optional. For replies that quote part of the original message, the quoted part of the message
+    Quote *TextQuote `json:"quote,omitempty"`
     // Optional. Bot through which the message was sent
     ViaBot *User `json:"via_bot,omitempty"`
     // Optional. Date the message was last edited in Unix time
@@ -198,6 +212,8 @@ type Message struct {
     Text string `json:"text,omitempty"`
     // Optional. For text messages, special entities like usernames, URLs, bot commands, etc. that appear in the text
     Entities []MessageEntity `json:"entities,omitempty"`
+    // Optional. Options used for link preview generation for the message, if it is a text message and link preview options were changed
+    LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
     // Optional. Message is an animation, information about the animation. For backward compatibility, when this field is set, the document field will also be set
     Animation *Animation `json:"animation,omitempty"`
     // Optional. Message is an audio file, information about the file
@@ -256,14 +272,14 @@ type Message struct {
     MigrateToChatId int64 `json:"migrate_to_chat_id,omitempty"`
     // Optional. The supergroup has been migrated from a group with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier.
     MigrateFromChatId int64 `json:"migrate_from_chat_id,omitempty"`
-    // Optional. Specified message was pinned. Note that the Message object in this field will not contain further reply_to_message fields even if it is itself a reply.
-    PinnedMessage *Message `json:"pinned_message,omitempty"`
+    // Optional. Specified message was pinned. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply.
+    PinnedMessage *MaybeInaccessibleMessage `json:"pinned_message,omitempty"`
     // Optional. Message is an invoice for a payment, information about the invoice. More about payments: https://core.telegram.org/bots/api#payments
     Invoice *Invoice `json:"invoice,omitempty"`
     // Optional. Message is a service message about a successful payment, information about the payment. More about payments: https://core.telegram.org/bots/api#payments
     SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
-    // Optional. Service message: a user was shared with the bot
-    UserShared *UserShared `json:"user_shared,omitempty"`
+    // Optional. Service message: users were shared with the bot
+    UsersShared *UsersShared `json:"users_shared,omitempty"`
     // Optional. Service message: a chat was shared with the bot
     ChatShared *ChatShared `json:"chat_shared,omitempty"`
     // Optional. The domain name of the website on which the user has logged in. More about Telegram Login: https://core.telegram.org/widgets/login
@@ -286,6 +302,14 @@ type Message struct {
     GeneralForumTopicHidden *GeneralForumTopicHidden `json:"general_forum_topic_hidden,omitempty"`
     // Optional. Service message: the 'General' forum topic unhidden
     GeneralForumTopicUnhidden *GeneralForumTopicUnhidden `json:"general_forum_topic_unhidden,omitempty"`
+    // Optional. Service message: a scheduled giveaway was created
+    GiveawayCreated *GiveawayCreated `json:"giveaway_created,omitempty"`
+    // Optional. The message is a scheduled giveaway message
+    Giveaway *Giveaway `json:"giveaway,omitempty"`
+    // Optional. A giveaway with public winners was completed
+    GiveawayWinners *GiveawayWinners `json:"giveaway_winners,omitempty"`
+    // Optional. Service message: a giveaway without public winners was completed
+    GiveawayCompleted *GiveawayCompleted `json:"giveaway_completed,omitempty"`
     // Optional. Service message: video chat scheduled
     VideoChatScheduled *VideoChatScheduled `json:"video_chat_scheduled,omitempty"`
     // Optional. Service message: video chat started
@@ -308,9 +332,101 @@ type MessageId struct {
 }
 
 
+// This object describes a message that was deleted or is otherwise inaccessible to the bot.
+type InaccessibleMessage struct {
+    // Chat the message belonged to
+    Chat *Chat `json:"chat"`
+    // Unique message identifier inside the chat
+    MessageId int64 `json:"message_id"`
+    // Always 0. The field can be used to differentiate regular and inaccessible messages.
+    Date int64 `json:"date"`
+}
+
+
+// This object describes a message that can be inaccessible to the bot. It can be one of
+// - Message
+// - InaccessibleMessage
+type MaybeInaccessibleMessage struct {
+    MessageId int64 `json:"message_id"`
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    From *User `json:"from,omitempty"`
+    SenderChat *Chat `json:"sender_chat,omitempty"`
+    Date int64 `json:"date"`
+    Chat *Chat `json:"chat"`
+    ForwardOrigin *MessageOrigin `json:"forward_origin,omitempty"`
+    IsTopicMessage bool `json:"is_topic_message,omitempty"`
+    IsAutomaticForward bool `json:"is_automatic_forward,omitempty"`
+    ReplyToMessage *Message `json:"reply_to_message,omitempty"`
+    ExternalReply *ExternalReplyInfo `json:"external_reply,omitempty"`
+    Quote *TextQuote `json:"quote,omitempty"`
+    ViaBot *User `json:"via_bot,omitempty"`
+    EditDate int64 `json:"edit_date,omitempty"`
+    HasProtectedContent bool `json:"has_protected_content,omitempty"`
+    MediaGroupId string `json:"media_group_id,omitempty"`
+    AuthorSignature string `json:"author_signature,omitempty"`
+    Text string `json:"text,omitempty"`
+    Entities []MessageEntity `json:"entities,omitempty"`
+    LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    Animation *Animation `json:"animation,omitempty"`
+    Audio *Audio `json:"audio,omitempty"`
+    Document *Document `json:"document,omitempty"`
+    Photo []PhotoSize `json:"photo,omitempty"`
+    Sticker *Sticker `json:"sticker,omitempty"`
+    Story *Story `json:"story,omitempty"`
+    Video *Video `json:"video,omitempty"`
+    VideoNote *VideoNote `json:"video_note,omitempty"`
+    Voice *Voice `json:"voice,omitempty"`
+    Caption string `json:"caption,omitempty"`
+    CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    HasMediaSpoiler bool `json:"has_media_spoiler,omitempty"`
+    Contact *Contact `json:"contact,omitempty"`
+    Dice *Dice `json:"dice,omitempty"`
+    Game *Game `json:"game,omitempty"`
+    Poll *Poll `json:"poll,omitempty"`
+    Venue *Venue `json:"venue,omitempty"`
+    Location *Location `json:"location,omitempty"`
+    NewChatMembers []User `json:"new_chat_members,omitempty"`
+    LeftChatMember *User `json:"left_chat_member,omitempty"`
+    NewChatTitle string `json:"new_chat_title,omitempty"`
+    NewChatPhoto []PhotoSize `json:"new_chat_photo,omitempty"`
+    DeleteChatPhoto bool `json:"delete_chat_photo,omitempty"`
+    GroupChatCreated bool `json:"group_chat_created,omitempty"`
+    SupergroupChatCreated bool `json:"supergroup_chat_created,omitempty"`
+    ChannelChatCreated bool `json:"channel_chat_created,omitempty"`
+    MessageAutoDeleteTimerChanged *MessageAutoDeleteTimerChanged `json:"message_auto_delete_timer_changed,omitempty"`
+    MigrateToChatId int64 `json:"migrate_to_chat_id,omitempty"`
+    MigrateFromChatId int64 `json:"migrate_from_chat_id,omitempty"`
+    PinnedMessage *MaybeInaccessibleMessage `json:"pinned_message,omitempty"`
+    Invoice *Invoice `json:"invoice,omitempty"`
+    SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
+    UsersShared *UsersShared `json:"users_shared,omitempty"`
+    ChatShared *ChatShared `json:"chat_shared,omitempty"`
+    ConnectedWebsite string `json:"connected_website,omitempty"`
+    WriteAccessAllowed *WriteAccessAllowed `json:"write_access_allowed,omitempty"`
+    PassportData *PassportData `json:"passport_data,omitempty"`
+    ProximityAlertTriggered *ProximityAlertTriggered `json:"proximity_alert_triggered,omitempty"`
+    ForumTopicCreated *ForumTopicCreated `json:"forum_topic_created,omitempty"`
+    ForumTopicEdited *ForumTopicEdited `json:"forum_topic_edited,omitempty"`
+    ForumTopicClosed *ForumTopicClosed `json:"forum_topic_closed,omitempty"`
+    ForumTopicReopened *ForumTopicReopened `json:"forum_topic_reopened,omitempty"`
+    GeneralForumTopicHidden *GeneralForumTopicHidden `json:"general_forum_topic_hidden,omitempty"`
+    GeneralForumTopicUnhidden *GeneralForumTopicUnhidden `json:"general_forum_topic_unhidden,omitempty"`
+    GiveawayCreated *GiveawayCreated `json:"giveaway_created,omitempty"`
+    Giveaway *Giveaway `json:"giveaway,omitempty"`
+    GiveawayWinners *GiveawayWinners `json:"giveaway_winners,omitempty"`
+    GiveawayCompleted *GiveawayCompleted `json:"giveaway_completed,omitempty"`
+    VideoChatScheduled *VideoChatScheduled `json:"video_chat_scheduled,omitempty"`
+    VideoChatStarted *VideoChatStarted `json:"video_chat_started,omitempty"`
+    VideoChatEnded *VideoChatEnded `json:"video_chat_ended,omitempty"`
+    VideoChatParticipantsInvited *VideoChatParticipantsInvited `json:"video_chat_participants_invited,omitempty"`
+    WebAppData *WebAppData `json:"web_app_data,omitempty"`
+    ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+
 // This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc.
 type MessageEntity struct {
-    // Type of the entity. Currently, can be "mention" (@username), "hashtag" (#hashtag), "cashtag" ($USD), "bot_command" (/start@jobs_bot), "url" (https://telegram.org), "email" (do-not-reply@telegram.org), "phone_number" (+1-212-555-0123), "bold" (bold text), "italic" (italic text), "underline" (underlined text), "strikethrough" (strikethrough text), "spoiler" (spoiler message), "code" (monowidth string), "pre" (monowidth block), "text_link" (for clickable text URLs), "text_mention" (for users without usernames), "custom_emoji" (for inline custom emoji stickers)
+    // Type of the entity. Currently, can be "mention" (@username), "hashtag" (#hashtag), "cashtag" ($USD), "bot_command" (/start@jobs_bot), "url" (https://telegram.org), "email" (do-not-reply@telegram.org), "phone_number" (+1-212-555-0123), "bold" (bold text), "italic" (italic text), "underline" (underlined text), "strikethrough" (strikethrough text), "spoiler" (spoiler message), "blockquote" (block quotation), "code" (monowidth string), "pre" (monowidth block), "text_link" (for clickable text URLs), "text_mention" (for users without usernames), "custom_emoji" (for inline custom emoji stickers)
     Type string `json:"type"`
     // Offset in UTF-16 code units to the start of the entity
     Offset int64 `json:"offset"`
@@ -326,6 +442,168 @@ type MessageEntity struct {
     CustomEmojiId string `json:"custom_emoji_id,omitempty"`
 }
 
+
+// This object contains information about the quoted part of a message that is replied to by the given message.
+type TextQuote struct {
+    // Text of the quoted part of a message that is replied to by the given message
+    Text string `json:"text"`
+    // Optional. Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are kept in quotes.
+    Entities []MessageEntity `json:"entities,omitempty"`
+    // Approximate quote position in the original message in UTF-16 code units as specified by the sender
+    Position int64 `json:"position"`
+    // Optional. True, if the quote was chosen manually by the message sender. Otherwise, the quote was added automatically by the server.
+    IsManual bool `json:"is_manual,omitempty"`
+}
+
+
+// This object contains information about a message that is being replied to, which may come from another chat or forum topic.
+type ExternalReplyInfo struct {
+    // Origin of the message replied to by the given message
+    Origin *MessageOrigin `json:"origin"`
+    // Optional. Chat the original message belongs to. Available only if the chat is a supergroup or a channel.
+    Chat *Chat `json:"chat,omitempty"`
+    // Optional. Unique message identifier inside the original chat. Available only if the original chat is a supergroup or a channel.
+    MessageId int64 `json:"message_id,omitempty"`
+    // Optional. Options used for link preview generation for the original message, if it is a text message
+    LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    // Optional. Message is an animation, information about the animation
+    Animation *Animation `json:"animation,omitempty"`
+    // Optional. Message is an audio file, information about the file
+    Audio *Audio `json:"audio,omitempty"`
+    // Optional. Message is a general file, information about the file
+    Document *Document `json:"document,omitempty"`
+    // Optional. Message is a photo, available sizes of the photo
+    Photo []PhotoSize `json:"photo,omitempty"`
+    // Optional. Message is a sticker, information about the sticker
+    Sticker *Sticker `json:"sticker,omitempty"`
+    // Optional. Message is a forwarded story
+    Story *Story `json:"story,omitempty"`
+    // Optional. Message is a video, information about the video
+    Video *Video `json:"video,omitempty"`
+    // Optional. Message is a video note, information about the video message
+    VideoNote *VideoNote `json:"video_note,omitempty"`
+    // Optional. Message is a voice message, information about the file
+    Voice *Voice `json:"voice,omitempty"`
+    // Optional. True, if the message media is covered by a spoiler animation
+    HasMediaSpoiler bool `json:"has_media_spoiler,omitempty"`
+    // Optional. Message is a shared contact, information about the contact
+    Contact *Contact `json:"contact,omitempty"`
+    // Optional. Message is a dice with random value
+    Dice *Dice `json:"dice,omitempty"`
+    // Optional. Message is a game, information about the game. More about games: https://core.telegram.org/bots/api#games
+    Game *Game `json:"game,omitempty"`
+    // Optional. Message is a scheduled giveaway, information about the giveaway
+    Giveaway *Giveaway `json:"giveaway,omitempty"`
+    // Optional. A giveaway with public winners was completed
+    GiveawayWinners *GiveawayWinners `json:"giveaway_winners,omitempty"`
+    // Optional. Message is an invoice for a payment, information about the invoice. More about payments: https://core.telegram.org/bots/api#payments
+    Invoice *Invoice `json:"invoice,omitempty"`
+    // Optional. Message is a shared location, information about the location
+    Location *Location `json:"location,omitempty"`
+    // Optional. Message is a native poll, information about the poll
+    Poll *Poll `json:"poll,omitempty"`
+    // Optional. Message is a venue, information about the venue
+    Venue *Venue `json:"venue,omitempty"`
+}
+
+
+// Describes reply parameters for the message that is being sent.
+type ReplyParameters struct {
+    // Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified
+    MessageId int64 `json:"message_id"`
+    // Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the channel (in the format @channelusername)
+    ChatId int64 `json:"chat_id,omitempty"`
+    // Optional. Pass True if the message should be sent even if the specified message to be replied to is not found; can be used only for replies in the same chat and forum topic.
+    AllowSendingWithoutReply bool `json:"allow_sending_without_reply,omitempty"`
+    // Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, and custom_emoji entities. The message will fail to send if the quote isn't found in the original message.
+    Quote string `json:"quote,omitempty"`
+    // Optional. Mode for parsing entities in the quote. See formatting options for more details.
+    QuoteParseMode string `json:"quote_parse_mode,omitempty"`
+    // Optional. A JSON-serialized list of special entities that appear in the quote. It can be specified instead of quote_parse_mode.
+    QuoteEntities []MessageEntity `json:"quote_entities,omitempty"`
+    // Optional. Position of the quote in the original message in UTF-16 code units
+    QuotePosition int64 `json:"quote_position,omitempty"`
+}
+
+
+// This object describes the origin of a message. It can be one of
+// - MessageOriginUser
+// - MessageOriginHiddenUser
+// - MessageOriginChat
+// - MessageOriginChannel
+type MessageOrigin struct {
+    Type string `json:"type"`
+    Date int64 `json:"date"`
+    SenderUser *User `json:"sender_user"`
+    SenderUserName string `json:"sender_user_name"`
+    SenderChat *Chat `json:"sender_chat"`
+    AuthorSignature string `json:"author_signature,omitempty"`
+    Chat *Chat `json:"chat"`
+    MessageId int64 `json:"message_id"`
+}
+
+
+// The message was originally sent by a known user.
+type MessageOriginUser struct {
+    // Type of the message origin, always "user"
+    Type string `json:"type"`
+    // Date the message was sent originally in Unix time
+    Date int64 `json:"date"`
+    // User that sent the message originally
+    SenderUser *User `json:"sender_user"`
+}
+
+func (v MessageOriginUser) GetMessageOrigin() MessageOriginUser {
+    return v
+}
+
+// The message was originally sent by an unknown user.
+type MessageOriginHiddenUser struct {
+    // Type of the message origin, always "hidden_user"
+    Type string `json:"type"`
+    // Date the message was sent originally in Unix time
+    Date int64 `json:"date"`
+    // Name of the user that sent the message originally
+    SenderUserName string `json:"sender_user_name"`
+}
+
+func (v MessageOriginHiddenUser) GetMessageOrigin() MessageOriginHiddenUser {
+    return v
+}
+
+// The message was originally sent on behalf of a chat to a group chat.
+type MessageOriginChat struct {
+    // Type of the message origin, always "chat"
+    Type string `json:"type"`
+    // Date the message was sent originally in Unix time
+    Date int64 `json:"date"`
+    // Chat that sent the message originally
+    SenderChat *Chat `json:"sender_chat"`
+    // Optional. For messages originally sent by an anonymous chat administrator, original message author signature
+    AuthorSignature string `json:"author_signature,omitempty"`
+}
+
+func (v MessageOriginChat) GetMessageOrigin() MessageOriginChat {
+    return v
+}
+
+// The message was originally sent to a channel chat.
+type MessageOriginChannel struct {
+    // Type of the message origin, always "channel"
+    Type string `json:"type"`
+    // Date the message was sent originally in Unix time
+    Date int64 `json:"date"`
+    // Channel chat to which the message was originally sent
+    Chat *Chat `json:"chat"`
+    // Unique message identifier inside the chat
+    MessageId int64 `json:"message_id"`
+    // Optional. Signature of the original post author
+    AuthorSignature string `json:"author_signature,omitempty"`
+}
+
+func (v MessageOriginChannel) GetMessageOrigin() MessageOriginChannel {
+    return v
+}
 
 // This object represents one size of a photo or a file / sticker thumbnail.
 type PhotoSize struct {
@@ -650,12 +928,12 @@ type GeneralForumTopicUnhidden interface {
 }
 
 
-// This object contains information about the user whose identifier was shared with the bot using a KeyboardButtonRequestUser button.
-type UserShared struct {
+// This object contains information about the users whose identifiers were shared with the bot using a KeyboardButtonRequestUsers button.
+type UsersShared struct {
     // Identifier of the request
     RequestId int64 `json:"request_id"`
-    // Identifier of the shared user. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier. The bot may not have access to the user and could be unable to use this identifier, unless the user is already known to the bot by some other means.
-    UserId int64 `json:"user_id"`
+    // Identifiers of the shared users. These numbers may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting them. But they have at most 52 significant bits, so 64-bit integers or double-precision float types are safe for storing these identifiers. The bot may not have access to the users and could be unable to use these identifiers, unless the users are already known to the bot by some other means.
+    UserIds []int64 `json:"user_ids"`
 }
 
 
@@ -703,6 +981,86 @@ type VideoChatEnded struct {
 type VideoChatParticipantsInvited struct {
     // New members that were invited to the video chat
     Users []User `json:"users"`
+}
+
+
+// This object represents a service message about the creation of a scheduled giveaway. Currently holds no information.
+type GiveawayCreated interface {
+
+}
+
+
+// This object represents a message about a scheduled giveaway.
+type Giveaway struct {
+    // The list of chats which the user must join to participate in the giveaway
+    Chats []Chat `json:"chats"`
+    // Point in time (Unix timestamp) when winners of the giveaway will be selected
+    WinnersSelectionDate int64 `json:"winners_selection_date"`
+    // The number of users which are supposed to be selected as winners of the giveaway
+    WinnerCount int64 `json:"winner_count"`
+    // Optional. True, if only users who join the chats after the giveaway started should be eligible to win
+    OnlyNewMembers bool `json:"only_new_members,omitempty"`
+    // Optional. True, if the list of giveaway winners will be visible to everyone
+    HasPublicWinners bool `json:"has_public_winners,omitempty"`
+    // Optional. Description of additional giveaway prize
+    PrizeDescription string `json:"prize_description,omitempty"`
+    // Optional. A list of two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which eligible users for the giveaway must come. If empty, then all users can participate in the giveaway. Users with a phone number that was bought on Fragment can always participate in giveaways.
+    CountryCodes []string `json:"country_codes,omitempty"`
+    // Optional. The number of months the Telegram Premium subscription won from the giveaway will be active for
+    PremiumSubscriptionMonthCount int64 `json:"premium_subscription_month_count,omitempty"`
+}
+
+
+// This object represents a message about the completion of a giveaway with public winners.
+type GiveawayWinners struct {
+    // The chat that created the giveaway
+    Chat *Chat `json:"chat"`
+    // Identifier of the messsage with the giveaway in the chat
+    GiveawayMessageId int64 `json:"giveaway_message_id"`
+    // Point in time (Unix timestamp) when winners of the giveaway were selected
+    WinnersSelectionDate int64 `json:"winners_selection_date"`
+    // Total number of winners in the giveaway
+    WinnerCount int64 `json:"winner_count"`
+    // List of up to 100 winners of the giveaway
+    Winners []User `json:"winners"`
+    // Optional. The number of other chats the user had to join in order to be eligible for the giveaway
+    AdditionalChatCount int64 `json:"additional_chat_count,omitempty"`
+    // Optional. The number of months the Telegram Premium subscription won from the giveaway will be active for
+    PremiumSubscriptionMonthCount int64 `json:"premium_subscription_month_count,omitempty"`
+    // Optional. Number of undistributed prizes
+    UnclaimedPrizeCount int64 `json:"unclaimed_prize_count,omitempty"`
+    // Optional. True, if only users who had joined the chats after the giveaway started were eligible to win
+    OnlyNewMembers bool `json:"only_new_members,omitempty"`
+    // Optional. True, if the giveaway was canceled because the payment for it was refunded
+    WasRefunded bool `json:"was_refunded,omitempty"`
+    // Optional. Description of additional giveaway prize
+    PrizeDescription string `json:"prize_description,omitempty"`
+}
+
+
+// This object represents a service message about the completion of a giveaway without public winners.
+type GiveawayCompleted struct {
+    // Number of winners in the giveaway
+    WinnerCount int64 `json:"winner_count"`
+    // Optional. Number of undistributed prizes
+    UnclaimedPrizeCount int64 `json:"unclaimed_prize_count,omitempty"`
+    // Optional. Message with the giveaway that was completed, if it wasn't deleted
+    GiveawayMessage *Message `json:"giveaway_message,omitempty"`
+}
+
+
+// Describes the options used for link preview generation.
+type LinkPreviewOptions struct {
+    // Optional. True, if the link preview is disabled
+    IsDisabled bool `json:"is_disabled,omitempty"`
+    // Optional. URL to use for the link preview. If empty, then the first URL found in the message text will be used
+    Url string `json:"url,omitempty"`
+    // Optional. True, if the media in the link preview is suppposed to be shrunk; ignored if the URL isn't explicitly specified or media size change isn't supported for the preview
+    PreferSmallMedia bool `json:"prefer_small_media,omitempty"`
+    // Optional. True, if the media in the link preview is suppposed to be enlarged; ignored if the URL isn't explicitly specified or media size change isn't supported for the preview
+    PreferLargeMedia bool `json:"prefer_large_media,omitempty"`
+    // Optional. True, if the link preview must be shown above the message text; otherwise, the link preview will be shown below the message text
+    ShowAboveText bool `json:"show_above_text,omitempty"`
 }
 
 
@@ -762,8 +1120,8 @@ func (m ReplyKeyboardMarkup) replyMarkup() {}
 type KeyboardButton struct {
     // Text of the button. If none of the optional fields are used, it will be sent as a message when the button is pressed
     Text string `json:"text"`
-    // Optional. If specified, pressing the button will open a list of suitable users. Tapping on any user will send their identifier to the bot in a "user_shared" service message. Available in private chats only.
-    RequestUser *KeyboardButtonRequestUser `json:"request_user,omitempty"`
+    // Optional. If specified, pressing the button will open a list of suitable users. Identifiers of selected users will be sent to the bot in a "users_shared" service message. Available in private chats only.
+    RequestUsers *KeyboardButtonRequestUsers `json:"request_users,omitempty"`
     // Optional. If specified, pressing the button will open a list of suitable chats. Tapping on a chat will send its identifier to the bot in a "chat_shared" service message. Available in private chats only.
     RequestChat *KeyboardButtonRequestChat `json:"request_chat,omitempty"`
     // Optional. If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only.
@@ -777,14 +1135,16 @@ type KeyboardButton struct {
 }
 
 
-// This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed. More about requesting users: https://core.telegram.org/bots/features#chat-and-user-selection
-type KeyboardButtonRequestUser struct {
-    // Signed 32-bit identifier of the request, which will be received back in the UserShared object. Must be unique within the message
+// This object defines the criteria used to request suitable users. The identifiers of the selected users will be shared with the bot when the corresponding button is pressed. More about requesting users: https://core.telegram.org/bots/features#chat-and-user-selection
+type KeyboardButtonRequestUsers struct {
+    // Signed 32-bit identifier of the request that will be received back in the UsersShared object. Must be unique within the message
     RequestId int64 `json:"request_id"`
-    // Optional. Pass True to request a bot, pass False to request a regular user. If not specified, no additional restrictions are applied.
+    // Optional. Pass True to request bots, pass False to request regular users. If not specified, no additional restrictions are applied.
     UserIsBot bool `json:"user_is_bot,omitempty"`
-    // Optional. Pass True to request a premium user, pass False to request a non-premium user. If not specified, no additional restrictions are applied.
+    // Optional. Pass True to request premium users, pass False to request non-premium users. If not specified, no additional restrictions are applied.
     UserIsPremium bool `json:"user_is_premium,omitempty"`
+    // Optional. The maximum number of users to be selected; 1-10. Defaults to 1.
+    MaxQuantity int64 `json:"max_quantity,omitempty"`
 }
 
 
@@ -897,8 +1257,8 @@ type CallbackQuery struct {
     Id string `json:"id"`
     // Sender
     From *User `json:"from"`
-    // Optional. Message with the callback button that originated the query. Note that message content and message date will not be available if the message is too old
-    Message *Message `json:"message,omitempty"`
+    // Optional. Message sent by the bot with the callback button that originated the query
+    Message *MaybeInaccessibleMessage `json:"message,omitempty"`
     // Optional. Identifier of the message sent via the bot in inline mode, that originated the query.
     InlineMessageId string `json:"inline_message_id,omitempty"`
     // Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent. Useful for high scores in games.
@@ -991,6 +1351,25 @@ type ChatAdministratorRights struct {
     CanDeleteStories bool `json:"can_delete_stories,omitempty"`
     // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; supergroups only
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
+}
+
+
+// This object represents changes in the status of a chat member.
+type ChatMemberUpdated struct {
+    // Chat the user belongs to
+    Chat *Chat `json:"chat"`
+    // Performer of the action, which resulted in the change
+    From *User `json:"from"`
+    // Date the change was done in Unix time
+    Date int64 `json:"date"`
+    // Previous information about the chat member
+    OldChatMember *ChatMember `json:"old_chat_member"`
+    // New information about the chat member
+    NewChatMember *ChatMember `json:"new_chat_member"`
+    // Optional. Chat invite link, which was used by the user to join the chat; for joining by invite link events only.
+    InviteLink *ChatInviteLink `json:"invite_link,omitempty"`
+    // Optional. True, if the user joined the chat via a chat folder invite link
+    ViaChatFolderInviteLink bool `json:"via_chat_folder_invite_link,omitempty"`
 }
 
 
@@ -1118,7 +1497,7 @@ type ChatMemberRestricted struct {
     User *User `json:"user"`
     // True, if the user is a member of the chat at the moment of the request
     IsMember bool `json:"is_member"`
-    // True, if the user is allowed to send text messages, contacts, invoices, locations and venues
+    // True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues
     CanSendMessages bool `json:"can_send_messages"`
     // True, if the user is allowed to send audios
     CanSendAudios bool `json:"can_send_audios"`
@@ -1180,25 +1559,6 @@ func (v ChatMemberBanned) GetChatMember() ChatMemberBanned {
     return v
 }
 
-// This object represents changes in the status of a chat member.
-type ChatMemberUpdated struct {
-    // Chat the user belongs to
-    Chat *Chat `json:"chat"`
-    // Performer of the action, which resulted in the change
-    From *User `json:"from"`
-    // Date the change was done in Unix time
-    Date int64 `json:"date"`
-    // Previous information about the chat member
-    OldChatMember *ChatMember `json:"old_chat_member"`
-    // New information about the chat member
-    NewChatMember *ChatMember `json:"new_chat_member"`
-    // Optional. Chat invite link, which was used by the user to join the chat; for joining by invite link events only.
-    InviteLink *ChatInviteLink `json:"invite_link,omitempty"`
-    // Optional. True, if the user joined the chat via a chat folder invite link
-    ViaChatFolderInviteLink bool `json:"via_chat_folder_invite_link,omitempty"`
-}
-
-
 // Represents a join request sent to a chat.
 type ChatJoinRequest struct {
     // Chat to which the request was sent
@@ -1218,7 +1578,7 @@ type ChatJoinRequest struct {
 
 // Describes actions that a non-administrator user is allowed to take in a chat.
 type ChatPermissions struct {
-    // Optional. True, if the user is allowed to send text messages, contacts, invoices, locations and venues
+    // Optional. True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues
     CanSendMessages bool `json:"can_send_messages,omitempty"`
     // Optional. True, if the user is allowed to send audios
     CanSendAudios bool `json:"can_send_audios,omitempty"`
@@ -1255,6 +1615,81 @@ type ChatLocation struct {
     Location *Location `json:"location"`
     // Location address; 1-64 characters, as defined by the chat owner
     Address string `json:"address"`
+}
+
+
+// This object describes the type of a reaction. Currently, it can be one of
+// - ReactionTypeEmoji
+// - ReactionTypeCustomEmoji
+type ReactionType struct {
+    Type string `json:"type"`
+    Emoji string `json:"emoji"`
+    CustomEmoji string `json:"custom_emoji"`
+}
+
+
+// The reaction is based on an emoji.
+type ReactionTypeEmoji struct {
+    // Type of the reaction, always "emoji"
+    Type string `json:"type"`
+    // Reaction emoji. Currently, it can be one of "👍", "👎", "❤", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
+    Emoji string `json:"emoji"`
+}
+
+func (v ReactionTypeEmoji) GetReactionType() ReactionTypeEmoji {
+    return v
+}
+
+// The reaction is based on a custom emoji.
+type ReactionTypeCustomEmoji struct {
+    // Type of the reaction, always "custom_emoji"
+    Type string `json:"type"`
+    // Custom emoji identifier
+    CustomEmoji string `json:"custom_emoji"`
+}
+
+func (v ReactionTypeCustomEmoji) GetReactionType() ReactionTypeCustomEmoji {
+    return v
+}
+
+// Represents a reaction added to a message along with the number of times it was added.
+type ReactionCount struct {
+    // Type of the reaction
+    Type *ReactionType `json:"type"`
+    // Number of times the reaction was added
+    TotalCount int64 `json:"total_count"`
+}
+
+
+// This object represents a change of a reaction on a message performed by a user.
+type MessageReactionUpdated struct {
+    // The chat containing the message the user reacted to
+    Chat *Chat `json:"chat"`
+    // Unique identifier of the message inside the chat
+    MessageId int64 `json:"message_id"`
+    // Optional. The user that changed the reaction, if the user isn't anonymous
+    User *User `json:"user,omitempty"`
+    // Optional. The chat on behalf of which the reaction was changed, if the user is anonymous
+    ActorChat *Chat `json:"actor_chat,omitempty"`
+    // Date of the change in Unix time
+    Date int64 `json:"date"`
+    // Previous list of reaction types that were set by the user
+    OldReaction []ReactionType `json:"old_reaction"`
+    // New list of reaction types that have been set by the user
+    NewReaction []ReactionType `json:"new_reaction"`
+}
+
+
+// This object represents reaction changes on a message with anonymous reactions.
+type MessageReactionCountUpdated struct {
+    // The chat containing the message
+    Chat *Chat `json:"chat"`
+    // Unique message identifier inside the chat
+    MessageId int64 `json:"message_id"`
+    // Date of the change in Unix time
+    Date int64 `json:"date"`
+    // List of reactions that are present on the message
+    Reactions []ReactionCount `json:"reactions"`
 }
 
 
@@ -1439,6 +1874,100 @@ type MenuButtonDefault struct {
 func (v MenuButtonDefault) GetMenuButton() MenuButtonDefault {
     return v
 }
+
+// This object describes the source of a chat boost. It can be one of
+// - ChatBoostSourcePremium
+// - ChatBoostSourceGiftCode
+// - ChatBoostSourceGiveaway
+type ChatBoostSource struct {
+    Source string `json:"source"`
+    User *User `json:"user"`
+    GiveawayMessageId int64 `json:"giveaway_message_id"`
+    IsUnclaimed bool `json:"is_unclaimed,omitempty"`
+}
+
+
+// The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium subscription to another user.
+type ChatBoostSourcePremium struct {
+    // Source of the boost, always "premium"
+    Source string `json:"source"`
+    // User that boosted the chat
+    User *User `json:"user"`
+}
+
+func (v ChatBoostSourcePremium) GetChatBoostSource() ChatBoostSourcePremium {
+    return v
+}
+
+// The boost was obtained by the creation of Telegram Premium gift codes to boost a chat. Each such code boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription.
+type ChatBoostSourceGiftCode struct {
+    // Source of the boost, always "gift_code"
+    Source string `json:"source"`
+    // User for which the gift code was created
+    User *User `json:"user"`
+}
+
+func (v ChatBoostSourceGiftCode) GetChatBoostSource() ChatBoostSourceGiftCode {
+    return v
+}
+
+// The boost was obtained by the creation of a Telegram Premium giveaway. This boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription.
+type ChatBoostSourceGiveaway struct {
+    // Source of the boost, always "giveaway"
+    Source string `json:"source"`
+    // Identifier of a message in the chat with the giveaway; the message could have been deleted already. May be 0 if the message isn't sent yet.
+    GiveawayMessageId int64 `json:"giveaway_message_id"`
+    // Optional. User that won the prize in the giveaway if any
+    User *User `json:"user,omitempty"`
+    // Optional. True, if the giveaway was completed, but there was no user to win the prize
+    IsUnclaimed bool `json:"is_unclaimed,omitempty"`
+}
+
+func (v ChatBoostSourceGiveaway) GetChatBoostSource() ChatBoostSourceGiveaway {
+    return v
+}
+
+// This object contains information about a chat boost.
+type ChatBoost struct {
+    // Unique identifier of the boost
+    BoostId string `json:"boost_id"`
+    // Point in time (Unix timestamp) when the chat was boosted
+    AddDate int64 `json:"add_date"`
+    // Point in time (Unix timestamp) when the boost will automatically expire, unless the booster's Telegram Premium subscription is prolonged
+    ExpirationDate int64 `json:"expiration_date"`
+    // Source of the added boost
+    Source *ChatBoostSource `json:"source"`
+}
+
+
+// This object represents a boost added to a chat or changed.
+type ChatBoostUpdated struct {
+    // Chat which was boosted
+    Chat *Chat `json:"chat"`
+    // Infomation about the chat boost
+    Boost *ChatBoost `json:"boost"`
+}
+
+
+// This object represents a boost removed from a chat.
+type ChatBoostRemoved struct {
+    // Chat which was boosted
+    Chat *Chat `json:"chat"`
+    // Unique identifier of the boost
+    BoostId string `json:"boost_id"`
+    // Point in time (Unix timestamp) when the boost was removed
+    RemoveDate int64 `json:"remove_date"`
+    // Source of the removed boost
+    Source *ChatBoostSource `json:"source"`
+}
+
+
+// This object represents a list of boosts added to a chat by a user.
+type UserChatBoosts struct {
+    // The list of boosts added to the chat by the user
+    Boosts []ChatBoost `json:"boosts"`
+}
+
 
 // Describes why a request was unsuccessful.
 type ResponseParameters struct {
@@ -2413,7 +2942,7 @@ type InputMessageContent struct {
     MessageText string `json:"message_text"`
     ParseMode string `json:"parse_mode,omitempty"`
     Entities []MessageEntity `json:"entities,omitempty"`
-    DisableWebPagePreview bool `json:"disable_web_page_preview,omitempty"`
+    LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
     Latitude float64 `json:"latitude"`
     Longitude float64 `json:"longitude"`
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
@@ -2460,8 +2989,8 @@ type InputTextMessageContent struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in message text, which can be specified instead of parse_mode
     Entities []MessageEntity `json:"entities,omitempty"`
-    // Optional. Disables link previews for links in the sent message
-    DisableWebPagePreview bool `json:"disable_web_page_preview,omitempty"`
+    // Optional. Link preview generation options for the message
+    LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
 }
 
 func (v InputTextMessageContent) GetInputMessageContent() InputTextMessageContent {
@@ -2978,6 +3507,16 @@ type GameHighScore struct {
 type ReplyMarkup interface {
     replyMarkup()
 }
+// Unmarshal ReactionType json arrays
+func UnmarshalReactionTypeArray(r json.RawMessage) (*[]ReactionType, error) {
+    var tmp *[]ReactionType
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
 // Unmarshal MessageEntity json arrays
 func UnmarshalMessageEntityArray(r json.RawMessage) (*[]MessageEntity, error) {
     var tmp *[]MessageEntity
@@ -3011,6 +3550,36 @@ func UnmarshalUserArray(r json.RawMessage) (*[]User, error) {
 // Unmarshal PollOption json arrays
 func UnmarshalPollOptionArray(r json.RawMessage) (*[]PollOption, error) {
     var tmp *[]PollOption
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
+// Unmarshal Chat json arrays
+func UnmarshalChatArray(r json.RawMessage) (*[]Chat, error) {
+    var tmp *[]Chat
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
+// Unmarshal ReactionCount json arrays
+func UnmarshalReactionCountArray(r json.RawMessage) (*[]ReactionCount, error) {
+    var tmp *[]ReactionCount
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
+// Unmarshal ChatBoost json arrays
+func UnmarshalChatBoostArray(r json.RawMessage) (*[]ChatBoost, error) {
+    var tmp *[]ChatBoost
     err := json.Unmarshal(r, &tmp)
     if err != nil {
         return nil, err
