@@ -1522,7 +1522,7 @@ type SetMessageReactionOpts struct {
     IsBig bool `json:"is_big,omitempty"`
 }
 
-// Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. In albums, bots must react to the first message. Returns True on success.
+// Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns True on success.
 func (b *Bot) SetMessageReaction(chatId int64, messageId int64, opts *SetMessageReactionOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
