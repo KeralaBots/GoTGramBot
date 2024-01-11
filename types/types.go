@@ -6,19 +6,19 @@ import "encoding/json"
 // This object represents an incoming update.
 // At most one of the optional parameters can be present in any given update.
 type Update struct {
-    // The update's unique identifier. Update identifiers start from a certain positive number and increase sequentially. This ID becomes especially handy if you're using webhooks, since it allows you to ignore repeated updates or to restore the correct update sequence, should they get out of order. If there are no new updates for at least a week, then identifier of the next update will be chosen randomly instead of sequentially.
+    // The update's unique identifier. Update identifiers start from a certain positive number and increase sequentially. This identifier becomes especially handy if you're using webhooks, since it allows you to ignore repeated updates or to restore the correct update sequence, should they get out of order. If there are no new updates for at least a week, then identifier of the next update will be chosen randomly instead of sequentially.
     UpdateId int64 `json:"update_id"`
     // Optional. New incoming message of any kind - text, photo, sticker, etc.
     Message *Message `json:"message,omitempty"`
-    // Optional. New version of a message that is known to the bot and was edited
+    // Optional. New version of a message that is known to the bot and was edited. This update may at times be triggered by changes to message fields that are either unavailable or not actively used by your bot.
     EditedMessage *Message `json:"edited_message,omitempty"`
     // Optional. New incoming channel post of any kind - text, photo, sticker, etc.
     ChannelPost *Message `json:"channel_post,omitempty"`
-    // Optional. New version of a channel post that is known to the bot and was edited
+    // Optional. New version of a channel post that is known to the bot and was edited. This update may at times be triggered by changes to message fields that are either unavailable or not actively used by your bot.
     EditedChannelPost *Message `json:"edited_channel_post,omitempty"`
     // Optional. A reaction to a message was changed by a user. The bot must be an administrator in the chat and must explicitly specify "message_reaction" in the list of allowed_updates to receive these updates. The update isn't received for reactions set by bots.
     MessageReaction *MessageReactionUpdated `json:"message_reaction,omitempty"`
-    // Optional. Reactions to a message with anonymous reactions were changed. The bot must be an administrator in the chat and must explicitly specify "message_reaction_count" in the list of allowed_updates to receive these updates.
+    // Optional. Reactions to a message with anonymous reactions were changed. The bot must be an administrator in the chat and must explicitly specify "message_reaction_count" in the list of allowed_updates to receive these updates. The updates are grouped and can be sent with delay up to a few minutes.
     MessageReactionCount *MessageReactionCountUpdated `json:"message_reaction_count,omitempty"`
     // Optional. New incoming inline query
     InlineQuery *InlineQuery `json:"inline_query,omitempty"`
@@ -30,7 +30,7 @@ type Update struct {
     ShippingQuery *ShippingQuery `json:"shipping_query,omitempty"`
     // Optional. New incoming pre-checkout query. Contains full information about checkout
     PreCheckoutQuery *PreCheckoutQuery `json:"pre_checkout_query,omitempty"`
-    // Optional. New poll state. Bots receive only updates about stopped polls and polls, which are sent by the bot
+    // Optional. New poll state. Bots receive only updates about manually stopped polls and polls, which are sent by the bot
     Poll *Poll `json:"poll,omitempty"`
     // Optional. A user changed their answer in a non-anonymous poll. Bots receive new votes only in polls that were sent by the bot itself.
     PollAnswer *PollAnswer `json:"poll_answer,omitempty"`
@@ -1105,7 +1105,7 @@ type ReplyKeyboardMarkup struct {
     OneTimeKeyboard bool `json:"one_time_keyboard,omitempty"`
     // Optional. The placeholder to be shown in the input field when the keyboard is active; 1-64 characters
     InputFieldPlaceholder string `json:"input_field_placeholder,omitempty"`
-    // Optional. Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message. Example: A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard.
+    // Optional. Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply to a message in the same chat and forum topic, sender of the original message. Example: A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard.
     Selective bool `json:"selective,omitempty"`
 }
 
@@ -1113,9 +1113,6 @@ type ReplyKeyboardMarkup struct {
 func (m ReplyKeyboardMarkup) replyMarkup() {}
 
 // This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_users, request_chat, request_contact, request_location, and request_poll are mutually exclusive.
-// Note: request_contact and request_location options will only work in Telegram versions released after 9 April, 2016. Older clients will display unsupported message.
-// Note: request_poll option will only work in Telegram versions released after 23 January, 2020. Older clients will display unsupported message.
-// Note: web_app option will only work in Telegram versions released after 16 April, 2022. Older clients will display unsupported message.
 // Note: request_users and request_chat options will only work in Telegram versions released after 3 February, 2023. Older clients will display unsupported message.
 type KeyboardButton struct {
     // Text of the button. If none of the optional fields are used, it will be sent as a message when the button is pressed
@@ -1180,7 +1177,7 @@ type KeyboardButtonPollType struct {
 type ReplyKeyboardRemove struct {
     // Requests clients to remove the custom keyboard (user will not be able to summon this keyboard; if you want to hide the keyboard from sight but keep it accessible, use one_time_keyboard in ReplyKeyboardMarkup)
     RemoveKeyboard bool `json:"remove_keyboard"`
-    // Optional. Use this parameter if you want to remove the keyboard for specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message. Example: A user votes in a poll, bot returns confirmation message in reply to the vote and removes the keyboard for that user, while still showing the keyboard with poll options to users who haven't voted yet.
+    // Optional. Use this parameter if you want to remove the keyboard for specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply to a message in the same chat and forum topic, sender of the original message. Example: A user votes in a poll, bot returns confirmation message in reply to the vote and removes the keyboard for that user, while still showing the keyboard with poll options to users who haven't voted yet.
     Selective bool `json:"selective,omitempty"`
 }
 
@@ -1188,7 +1185,6 @@ type ReplyKeyboardRemove struct {
 func (m ReplyKeyboardRemove) replyMarkup() {}
 
 // This object represents an inline keyboard that appears right next to the message it belongs to.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will display unsupported message.
 type InlineKeyboardMarkup struct {
     // Array of button rows, each represented by an Array of InlineKeyboardButton objects
     InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
@@ -1201,7 +1197,7 @@ func (m InlineKeyboardMarkup) replyMarkup() {}
 type InlineKeyboardButton struct {
     // Label text on the button
     Text string `json:"text"`
-    // Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their ID without using a username, if this is allowed by their privacy settings.
+    // Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.
     Url string `json:"url,omitempty"`
     // Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes
     CallbackData string `json:"callback_data,omitempty"`
@@ -1276,7 +1272,7 @@ type ForceReply struct {
     ForceReply bool `json:"force_reply"`
     // Optional. The placeholder to be shown in the input field when the reply is active; 1-64 characters
     InputFieldPlaceholder string `json:"input_field_placeholder,omitempty"`
-    // Optional. Use this parameter if you want to force reply from specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
+    // Optional. Use this parameter if you want to force reply from specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply to a message in the same chat and forum topic, sender of the original message.
     Selective bool `json:"selective,omitempty"`
 }
 
@@ -2504,7 +2500,6 @@ func (v InlineQueryResultVideo) GetInlineQueryResult() InlineQueryResultVideo {
 }
 
 // Represents a link to an MP3 audio file. By default, this audio file will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the audio.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultAudio struct {
     // Type of the result, must be audio
     Type string `json:"type"`
@@ -2535,7 +2530,6 @@ func (v InlineQueryResultAudio) GetInlineQueryResult() InlineQueryResultAudio {
 }
 
 // Represents a link to a voice recording in an .OGG container encoded with OPUS. By default, this voice recording will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the the voice message.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultVoice struct {
     // Type of the result, must be voice
     Type string `json:"type"`
@@ -2564,7 +2558,6 @@ func (v InlineQueryResultVoice) GetInlineQueryResult() InlineQueryResultVoice {
 }
 
 // Represents a link to a file. By default, this file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the file. Currently, only .PDF and .ZIP files can be sent using this method.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultDocument struct {
     // Type of the result, must be document
     Type string `json:"type"`
@@ -2601,7 +2594,6 @@ func (v InlineQueryResultDocument) GetInlineQueryResult() InlineQueryResultDocum
 }
 
 // Represents a location on a map. By default, the location will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the location.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultLocation struct {
     // Type of the result, must be location
     Type string `json:"type"`
@@ -2638,7 +2630,6 @@ func (v InlineQueryResultLocation) GetInlineQueryResult() InlineQueryResultLocat
 }
 
 // Represents a venue. By default, the venue will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the venue.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultVenue struct {
     // Type of the result, must be venue
     Type string `json:"type"`
@@ -2677,7 +2668,6 @@ func (v InlineQueryResultVenue) GetInlineQueryResult() InlineQueryResultVenue {
 }
 
 // Represents a contact with a phone number. By default, this contact will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the contact.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultContact struct {
     // Type of the result, must be contact
     Type string `json:"type"`
@@ -2708,7 +2698,6 @@ func (v InlineQueryResultContact) GetInlineQueryResult() InlineQueryResultContac
 }
 
 // Represents a Game.
-// Note: This will only work in Telegram versions released after October 1, 2016. Older clients will not display any inline results if a game result is among them.
 type InlineQueryResultGame struct {
     // Type of the result, must be game
     Type string `json:"type"`
@@ -2805,7 +2794,6 @@ func (v InlineQueryResultCachedMpeg4Gif) GetInlineQueryResult() InlineQueryResul
 }
 
 // Represents a link to a sticker stored on the Telegram servers. By default, this sticker will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the sticker.
-// Note: This will only work in Telegram versions released after 9 April, 2016 for static stickers and after 06 July, 2019 for animated stickers. Older clients will ignore them.
 type InlineQueryResultCachedSticker struct {
     // Type of the result, must be sticker
     Type string `json:"type"`
@@ -2824,7 +2812,6 @@ func (v InlineQueryResultCachedSticker) GetInlineQueryResult() InlineQueryResult
 }
 
 // Represents a link to a file stored on the Telegram servers. By default, this file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the file.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultCachedDocument struct {
     // Type of the result, must be document
     Type string `json:"type"`
@@ -2881,7 +2868,6 @@ func (v InlineQueryResultCachedVideo) GetInlineQueryResult() InlineQueryResultCa
 }
 
 // Represents a link to a voice message stored on the Telegram servers. By default, this voice message will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the voice message.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultCachedVoice struct {
     // Type of the result, must be voice
     Type string `json:"type"`
@@ -2908,7 +2894,6 @@ func (v InlineQueryResultCachedVoice) GetInlineQueryResult() InlineQueryResultCa
 }
 
 // Represents a link to an MP3 audio file stored on the Telegram servers. By default, this audio file will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the audio.
-// Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.
 type InlineQueryResultCachedAudio struct {
     // Type of the result, must be audio
     Type string `json:"type"`
