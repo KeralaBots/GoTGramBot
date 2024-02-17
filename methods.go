@@ -1707,12 +1707,12 @@ type PromoteChatMemberOpts struct {
     CanPromoteMembers bool `json:"can_promote_members,omitempty"`
     CanChangeInfo bool `json:"can_change_info,omitempty"`
     CanInviteUsers bool `json:"can_invite_users,omitempty"`
-    CanPostMessages bool `json:"can_post_messages,omitempty"`
-    CanEditMessages bool `json:"can_edit_messages,omitempty"`
-    CanPinMessages bool `json:"can_pin_messages,omitempty"`
     CanPostStories bool `json:"can_post_stories,omitempty"`
     CanEditStories bool `json:"can_edit_stories,omitempty"`
     CanDeleteStories bool `json:"can_delete_stories,omitempty"`
+    CanPostMessages bool `json:"can_post_messages,omitempty"`
+    CanEditMessages bool `json:"can_edit_messages,omitempty"`
+    CanPinMessages bool `json:"can_pin_messages,omitempty"`
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
 }
 
@@ -1732,12 +1732,12 @@ func (b *Bot) PromoteChatMember(chatId int64, userId int64, opts *PromoteChatMem
         params["can_promote_members"] = strconv.FormatBool(opts.CanPromoteMembers)
         params["can_change_info"] = strconv.FormatBool(opts.CanChangeInfo)
         params["can_invite_users"] = strconv.FormatBool(opts.CanInviteUsers)
-        params["can_post_messages"] = strconv.FormatBool(opts.CanPostMessages)
-        params["can_edit_messages"] = strconv.FormatBool(opts.CanEditMessages)
-        params["can_pin_messages"] = strconv.FormatBool(opts.CanPinMessages)
         params["can_post_stories"] = strconv.FormatBool(opts.CanPostStories)
         params["can_edit_stories"] = strconv.FormatBool(opts.CanEditStories)
         params["can_delete_stories"] = strconv.FormatBool(opts.CanDeleteStories)
+        params["can_post_messages"] = strconv.FormatBool(opts.CanPostMessages)
+        params["can_edit_messages"] = strconv.FormatBool(opts.CanEditMessages)
+        params["can_pin_messages"] = strconv.FormatBool(opts.CanPinMessages)
         params["can_manage_topics"] = strconv.FormatBool(opts.CanManageTopics)
     }
 
