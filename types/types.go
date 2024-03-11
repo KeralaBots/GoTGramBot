@@ -839,10 +839,10 @@ type Poll struct {
 
 // This object represents a point on the map.
 type Location struct {
-    // Longitude as defined by sender
-    Longitude float64 `json:"longitude"`
     // Latitude as defined by sender
     Latitude float64 `json:"latitude"`
+    // Longitude as defined by sender
+    Longitude float64 `json:"longitude"`
     // Optional. The radius of uncertainty for the location, measured in meters; 0-1500
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
     // Optional. Time relative to the message sending date, during which the location can be updated; in seconds. For active live locations only.
@@ -1362,13 +1362,13 @@ type ChatAdministratorRights struct {
     CanEditStories bool `json:"can_edit_stories"`
     // True, if the administrator can delete stories posted by other users
     CanDeleteStories bool `json:"can_delete_stories"`
-    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; channels only
+    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; for channels only
     CanPostMessages bool `json:"can_post_messages,omitempty"`
-    // Optional. True, if the administrator can edit messages of other users and can pin messages; channels only
+    // Optional. True, if the administrator can edit messages of other users and can pin messages; for channels only
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
-    // Optional. True, if the user is allowed to pin messages; groups and supergroups only
+    // Optional. True, if the user is allowed to pin messages; for groups and supergroups only
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
-    // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; supergroups only
+    // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
 }
 
@@ -1480,13 +1480,13 @@ type ChatMemberAdministrator struct {
     CanEditStories bool `json:"can_edit_stories"`
     // True, if the administrator can delete stories posted by other users
     CanDeleteStories bool `json:"can_delete_stories"`
-    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; channels only
+    // Optional. True, if the administrator can post messages in the channel, or access channel statistics; for channels only
     CanPostMessages bool `json:"can_post_messages,omitempty"`
-    // Optional. True, if the administrator can edit messages of other users and can pin messages; channels only
+    // Optional. True, if the administrator can edit messages of other users and can pin messages; for channels only
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
-    // Optional. True, if the user is allowed to pin messages; groups and supergroups only
+    // Optional. True, if the user is allowed to pin messages; for groups and supergroups only
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
-    // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; supergroups only
+    // Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
     // Optional. Custom title for this user
     CustomTitle string `json:"custom_title,omitempty"`
@@ -3278,21 +3278,21 @@ type PassportFile struct {
 type EncryptedPassportElement struct {
     // Element type. One of "personal_details", "passport", "driver_license", "identity_card", "internal_passport", "address", "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration", "phone_number", "email".
     Type string `json:"type"`
-    // Optional. Base64-encoded encrypted Telegram Passport element data provided by the user, available for "personal_details", "passport", "driver_license", "identity_card", "internal_passport" and "address" types. Can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Base64-encoded encrypted Telegram Passport element data provided by the user; available only for "personal_details", "passport", "driver_license", "identity_card", "internal_passport" and "address" types. Can be decrypted and verified using the accompanying EncryptedCredentials.
     Data string `json:"data,omitempty"`
-    // Optional. User's verified phone number, available only for "phone_number" type
+    // Optional. User's verified phone number; available only for "phone_number" type
     PhoneNumber string `json:"phone_number,omitempty"`
-    // Optional. User's verified email address, available only for "email" type
+    // Optional. User's verified email address; available only for "email" type
     Email string `json:"email,omitempty"`
-    // Optional. Array of encrypted files with documents provided by the user, available for "utility_bill", "bank_statement", "rental_agreement", "passport_registration" and "temporary_registration" types. Files can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Array of encrypted files with documents provided by the user; available only for "utility_bill", "bank_statement", "rental_agreement", "passport_registration" and "temporary_registration" types. Files can be decrypted and verified using the accompanying EncryptedCredentials.
     Files []PassportFile `json:"files,omitempty"`
-    // Optional. Encrypted file with the front side of the document, provided by the user. Available for "passport", "driver_license", "identity_card" and "internal_passport". The file can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Encrypted file with the front side of the document, provided by the user; available only for "passport", "driver_license", "identity_card" and "internal_passport". The file can be decrypted and verified using the accompanying EncryptedCredentials.
     FrontSide *PassportFile `json:"front_side,omitempty"`
-    // Optional. Encrypted file with the reverse side of the document, provided by the user. Available for "driver_license" and "identity_card". The file can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Encrypted file with the reverse side of the document, provided by the user; available only for "driver_license" and "identity_card". The file can be decrypted and verified using the accompanying EncryptedCredentials.
     ReverseSide *PassportFile `json:"reverse_side,omitempty"`
-    // Optional. Encrypted file with the selfie of the user holding a document, provided by the user; available for "passport", "driver_license", "identity_card" and "internal_passport". The file can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Encrypted file with the selfie of the user holding a document, provided by the user; available if requested for "passport", "driver_license", "identity_card" and "internal_passport". The file can be decrypted and verified using the accompanying EncryptedCredentials.
     Selfie *PassportFile `json:"selfie,omitempty"`
-    // Optional. Array of encrypted files with translated versions of documents provided by the user. Available if requested for "passport", "driver_license", "identity_card", "internal_passport", "utility_bill", "bank_statement", "rental_agreement", "passport_registration" and "temporary_registration" types. Files can be decrypted and verified using the accompanying EncryptedCredentials.
+    // Optional. Array of encrypted files with translated versions of documents provided by the user; available if requested for "passport", "driver_license", "identity_card", "internal_passport", "utility_bill", "bank_statement", "rental_agreement", "passport_registration" and "temporary_registration" types. Files can be decrypted and verified using the accompanying EncryptedCredentials.
     Translation []PassportFile `json:"translation,omitempty"`
     // Base64-encoded element hash for using in PassportElementErrorUnspecified
     Hash string `json:"hash"`
