@@ -197,6 +197,7 @@ func (b *Bot) Close() (bool, error) {
 
 // SendMessage methods's optional params
 type SendMessageOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     Entities []types.MessageEntity `json:"entities,omitempty"`
@@ -215,6 +216,7 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["text"] = text
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["parse_mode"] = opts.ParseMode
 
@@ -455,6 +457,7 @@ func (b *Bot) CopyMessages(chatId int64, fromChatId int64, messageIds []int64, o
 
 // SendPhoto methods's optional params
 type SendPhotoOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
@@ -488,6 +491,7 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
@@ -537,6 +541,7 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
 
 // SendAudio methods's optional params
 type SendAudioOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
@@ -574,6 +579,7 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
@@ -640,6 +646,7 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
 
 // SendDocument methods's optional params
 type SendDocumentOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     Caption string `json:"caption,omitempty"`
@@ -674,6 +681,7 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
 
         if opts.Thumbnail != nil {
@@ -738,6 +746,7 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
 
 // SendVideo methods's optional params
 type SendVideoOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
@@ -776,6 +785,7 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["width"] = strconv.FormatInt(opts.Width, 10)
@@ -844,6 +854,7 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
 
 // SendAnimation methods's optional params
 type SendAnimationOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
@@ -881,6 +892,7 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["width"] = strconv.FormatInt(opts.Width, 10)
@@ -948,6 +960,7 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
 
 // SendVoice methods's optional params
 type SendVoiceOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
@@ -959,7 +972,7 @@ type SendVoiceOpts struct {
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
+// Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
 func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -981,6 +994,7 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
@@ -1030,6 +1044,7 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
 
 // SendVideoNote methods's optional params
 type SendVideoNoteOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Length int64 `json:"length,omitempty"`
@@ -1062,6 +1077,7 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["length"] = strconv.FormatInt(opts.Length, 10)
@@ -1116,6 +1132,7 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
 
 // SendMediaGroup methods's optional params
 type SendMediaGroupOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
@@ -1138,6 +1155,7 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
     }
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
@@ -1166,6 +1184,7 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
 
 // SendLocation methods's optional params
 type SendLocationOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
     LivePeriod int64 `json:"live_period,omitempty"`
@@ -1186,6 +1205,7 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
     params["latitude"] = strconv.FormatFloat(latitude, 'E', -1, 64)
     params["longitude"] = strconv.FormatFloat(longitude, 'E', -1, 64)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["horizontal_accuracy"] = strconv.FormatFloat(opts.HorizontalAccuracy, 'E', -1, 64)
         params["live_period"] = strconv.FormatInt(opts.LivePeriod, 10)
@@ -1227,6 +1247,7 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
 
 // SendVenue methods's optional params
 type SendVenueOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     FoursquareId string `json:"foursquare_id,omitempty"`
     FoursquareType string `json:"foursquare_type,omitempty"`
@@ -1249,6 +1270,7 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
     params["title"] = title
     params["address"] = address
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["foursquare_id"] = opts.FoursquareId
         params["foursquare_type"] = opts.FoursquareType
@@ -1290,6 +1312,7 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
 
 // SendContact methods's optional params
 type SendContactOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     LastName string `json:"last_name,omitempty"`
     Vcard string `json:"vcard,omitempty"`
@@ -1308,6 +1331,7 @@ func (b *Bot) SendContact(chatId int64, phoneNumber string, firstName string, op
     params["phone_number"] = phoneNumber
     params["first_name"] = firstName
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["last_name"] = opts.LastName
         params["vcard"] = opts.Vcard
@@ -1347,7 +1371,10 @@ func (b *Bot) SendContact(chatId int64, phoneNumber string, firstName string, op
 
 // SendPoll methods's optional params
 type SendPollOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    QuestionParseMode string `json:"question_parse_mode,omitempty"`
+    QuestionEntities []types.MessageEntity `json:"question_entities,omitempty"`
     IsAnonymous bool `json:"is_anonymous,omitempty"`
     Type string `json:"type,omitempty"`
     AllowsMultipleAnswers bool `json:"allows_multiple_answers,omitempty"`
@@ -1365,7 +1392,7 @@ type SendPollOpts struct {
 }
 
 // Use this method to send a native poll. On success, the sent Message is returned.
-func (b *Bot) SendPoll(chatId int64, question string, options []string, opts *SendPollOpts) (*types.Message, error) {
+func (b *Bot) SendPoll(chatId int64, question string, options []types.InputPollOption, opts *SendPollOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
@@ -1381,7 +1408,18 @@ func (b *Bot) SendPoll(chatId int64, question string, options []string, opts *Se
     }
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["question_parse_mode"] = opts.QuestionParseMode
+
+        if opts.QuestionEntities != nil {
+            bs, err := json.Marshal(opts.QuestionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field question_entities: %w", err)
+            }
+            params["question_entities"] = string(bs)
+        }
+
         params["is_anonymous"] = strconv.FormatBool(opts.IsAnonymous)
         params["type"] = opts.Type
         params["allows_multiple_answers"] = strconv.FormatBool(opts.AllowsMultipleAnswers)
@@ -1436,6 +1474,7 @@ func (b *Bot) SendPoll(chatId int64, question string, options []string, opts *Se
 
 // SendDice methods's optional params
 type SendDiceOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
@@ -1451,6 +1490,7 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
 
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
@@ -1489,6 +1529,7 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
 
 // SendChatAction methods's optional params
 type SendChatActionOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
 }
 
@@ -1501,6 +1542,7 @@ func (b *Bot) SendChatAction(chatId int64, action string, opts *SendChatActionOp
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["action"] = action
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
     }
 
@@ -2153,8 +2195,8 @@ func (b *Bot) LeaveChat(chatId int64) (bool, error) {
 
 }
 
-// Use this method to get up to date information about the chat. Returns a Chat object on success.
-func (b *Bot) GetChat(chatId int64) (*types.Chat, error) {
+// Use this method to get up-to-date information about the chat. Returns a ChatFullInfo object on success.
+func (b *Bot) GetChat(chatId int64) (*types.ChatFullInfo, error) {
     params := map[string]string{}
     data_params := map[string]string{}
     params["chat_id"] = strconv.FormatInt(chatId, 10)
@@ -2164,7 +2206,7 @@ func (b *Bot) GetChat(chatId int64) (*types.Chat, error) {
         return nil, err
     }
     
-    var res *types.Chat
+    var res *types.ChatFullInfo
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -2537,6 +2579,22 @@ func (b *Bot) GetUserChatBoosts(chatId int64, userId int64) (*types.UserChatBoos
     }
     
     var res *types.UserChatBoosts
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to get information about the connection of the bot with a business account. Returns a BusinessConnection object on success.
+func (b *Bot) GetBusinessConnection(businessConnectionId string) (*types.BusinessConnection, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+
+    r, err := b.Request("getBusinessConnection", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.BusinessConnection
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -3115,6 +3173,7 @@ type EditMessageLiveLocationOpts struct {
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
+    LivePeriod int64 `json:"live_period,omitempty"`
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
     Heading int64 `json:"heading,omitempty"`
     ProximityAlertRadius int64 `json:"proximity_alert_radius,omitempty"`
@@ -3132,6 +3191,7 @@ func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts 
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
+        params["live_period"] = strconv.FormatInt(opts.LivePeriod, 10)
         params["horizontal_accuracy"] = strconv.FormatFloat(opts.HorizontalAccuracy, 'E', -1, 64)
         params["heading"] = strconv.FormatInt(opts.Heading, 10)
         params["proximity_alert_radius"] = strconv.FormatInt(opts.ProximityAlertRadius, 10)
@@ -3327,6 +3387,7 @@ func (b *Bot) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
 
 // SendSticker methods's optional params
 type SendStickerOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
@@ -3357,6 +3418,7 @@ func (b *Bot) SendSticker(chatId int64, sticker types.InputFile, opts *SendStick
         }
     }
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
@@ -3433,7 +3495,7 @@ func (b *Bot) GetCustomEmojiStickers(customEmojiIds []string) ([]types.Sticker, 
 
 }
 
-// Use this method to upload a file with a sticker for later use in the createNewStickerSet and addStickerToSet methods (the file can be used multiple times). Returns the uploaded File on success.
+// Use this method to upload a file with a sticker for later use in the createNewStickerSet, addStickerToSet, or replaceStickerInSet methods (the file can be used multiple times). Returns the uploaded File on success.
 func (b *Bot) UploadStickerFile(userId int64, sticker types.InputFile, stickerFormat string) (*types.File, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -3472,7 +3534,7 @@ type CreateNewStickerSetOpts struct {
 }
 
 // Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
-func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, stickers []types.InputSticker, stickerFormat string, opts *CreateNewStickerSetOpts) (bool, error) {
+func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, stickers []types.InputSticker, opts *CreateNewStickerSetOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
@@ -3488,7 +3550,6 @@ func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, stick
         params["stickers"] = string(bs)
     }
 
-    params["sticker_format"] = stickerFormat
     if opts != nil {
         params["sticker_type"] = opts.StickerType
         params["needs_repainting"] = strconv.FormatBool(opts.NeedsRepainting)
@@ -3506,7 +3567,7 @@ func (b *Bot) CreateNewStickerSet(userId int64, name string, title string, stick
 
 }
 
-// Use this method to add a new sticker to a set created by the bot. The format of the added sticker must match the format of the other stickers in the set. Emoji sticker sets can have up to 200 stickers. Animated and video sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success.
+// Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success.
 func (b *Bot) AddStickerToSet(userId int64, name string, sticker *types.InputSticker) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -3556,6 +3617,33 @@ func (b *Bot) DeleteStickerFromSet(sticker string) (bool, error) {
     params["sticker"] = sticker
 
     r, err := b.Request("deleteStickerFromSet", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling deleteStickerFromSet, then addStickerToSet, then setStickerPositionInSet. Returns True on success.
+func (b *Bot) ReplaceStickerInSet(userId int64, name string, oldSticker string, sticker *types.InputSticker) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["name"] = name
+    params["old_sticker"] = oldSticker
+
+    if sticker != nil {
+        bs, err := json.Marshal(sticker)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field sticker: %w", err)
+        }
+        params["sticker"] = string(bs)
+    }
+
+
+    r, err := b.Request("replaceStickerInSet", params, data_params)
     if err != nil {
         return false, err
     }
@@ -3683,12 +3771,13 @@ type SetStickerSetThumbnailOpts struct {
 }
 
 // Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
-func (b *Bot) SetStickerSetThumbnail(name string, userId int64, opts *SetStickerSetThumbnailOpts) (bool, error) {
+func (b *Bot) SetStickerSetThumbnail(name string, userId int64, format string, opts *SetStickerSetThumbnailOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     params["name"] = name
     params["user_id"] = strconv.FormatInt(userId, 10)
+    params["format"] = format
     if opts != nil {
 
         if opts.Thumbnail != nil {
@@ -4109,6 +4198,7 @@ func (b *Bot) SetPassportDataErrors(userId int64, errors []types.PassportElement
 
 // SendGame methods's optional params
 type SendGameOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
@@ -4124,6 +4214,7 @@ func (b *Bot) SendGame(chatId int64, gameShortName string, opts *SendGameOpts) (
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["game_short_name"] = gameShortName
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
