@@ -204,6 +204,7 @@ type SendMessageOpts struct {
     LinkPreviewOptions *types.LinkPreviewOptions `json:"link_preview_options,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -239,6 +240,7 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
 
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -351,13 +353,14 @@ type CopyMessageOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
 func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts *CopyMessageOpts) (*types.MessageId, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -378,6 +381,7 @@ func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts 
             params["caption_entities"] = string(bs)
         }
 
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
 
@@ -420,7 +424,7 @@ type CopyMessagesOpts struct {
     RemoveCaption bool `json:"remove_caption,omitempty"`
 }
 
-// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
 func (b *Bot) CopyMessages(chatId int64, fromChatId int64, messageIds []int64, opts *CopyMessagesOpts) ([]types.MessageId, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -462,9 +466,11 @@ type SendPhotoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -504,9 +510,11 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -552,6 +560,7 @@ type SendAudioOpts struct {
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -612,6 +621,7 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -655,6 +665,7 @@ type SendDocumentOpts struct {
     DisableContentTypeDetection bool `json:"disable_content_type_detection,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -712,6 +723,7 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
         params["disable_content_type_detection"] = strconv.FormatBool(opts.DisableContentTypeDetection)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -755,10 +767,12 @@ type SendVideoOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     HasSpoiler bool `json:"has_spoiler,omitempty"`
     SupportsStreaming bool `json:"supports_streaming,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -816,10 +830,12 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
             params["caption_entities"] = string(bs)
         }
 
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["supports_streaming"] = strconv.FormatBool(opts.SupportsStreaming)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -863,9 +879,11 @@ type SendAnimationOpts struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -923,9 +941,11 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
             params["caption_entities"] = string(bs)
         }
 
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -968,6 +988,7 @@ type SendVoiceOpts struct {
     Duration int64 `json:"duration,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1010,6 +1031,7 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1051,6 +1073,7 @@ type SendVideoNoteOpts struct {
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1098,6 +1121,7 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1130,12 +1154,88 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
 
 }
 
+// SendPaidMedia methods's optional params
+type SendPaidMediaOpts struct {
+    Caption string `json:"caption,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
+    DisableNotification bool `json:"disable_notification,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+    ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
+    ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to send paid media to channel chats. On success, the sent Message is returned.
+func (b *Bot) SendPaidMedia(chatId int64, starCount int64, media []types.InputPaidMedia, opts *SendPaidMediaOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["star_count"] = strconv.FormatInt(starCount, 10)
+
+    if media != nil {
+        bs, err := json.Marshal(media)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field media: %w", err)
+        }
+        params["media"] = string(bs)
+    }
+
+    if opts != nil {
+        params["caption"] = opts.Caption
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.CaptionEntities != nil {
+            bs, err := json.Marshal(opts.CaptionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field caption_entities: %w", err)
+            }
+            params["caption_entities"] = string(bs)
+        }
+
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
+        params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+
+        if opts.ReplyParameters != nil {
+            bs, err := json.Marshal(opts.ReplyParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_parameters: %w", err)
+            }
+            params["reply_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendPaidMedia", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SendMediaGroup methods's optional params
 type SendMediaGroupOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
 }
 
@@ -1159,6 +1259,7 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1192,6 +1293,7 @@ type SendLocationOpts struct {
     ProximityAlertRadius int64 `json:"proximity_alert_radius,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1213,6 +1315,7 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
         params["proximity_alert_radius"] = strconv.FormatInt(opts.ProximityAlertRadius, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1255,6 +1358,7 @@ type SendVenueOpts struct {
     GooglePlaceType string `json:"google_place_type,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1278,6 +1382,7 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
         params["google_place_type"] = opts.GooglePlaceType
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1318,6 +1423,7 @@ type SendContactOpts struct {
     Vcard string `json:"vcard,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1337,6 +1443,7 @@ func (b *Bot) SendContact(chatId int64, phoneNumber string, firstName string, op
         params["vcard"] = opts.Vcard
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1387,6 +1494,7 @@ type SendPollOpts struct {
     IsClosed bool `json:"is_closed,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1440,6 +1548,7 @@ func (b *Bot) SendPoll(chatId int64, question string, options []types.InputPollO
         params["is_closed"] = strconv.FormatBool(opts.IsClosed)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1479,6 +1588,7 @@ type SendDiceOpts struct {
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1495,6 +1605,7 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -3004,6 +3115,7 @@ func (b *Bot) GetMyDefaultAdministratorRights(opts *GetMyDefaultAdministratorRig
 
 // EditMessageText methods's optional params
 type EditMessageTextOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
@@ -3013,13 +3125,14 @@ type EditMessageTextOpts struct {
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 func (b *Bot) EditMessageText(text string, opts *EditMessageTextOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     params["text"] = text
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3067,21 +3180,24 @@ func (b *Bot) EditMessageText(text string, opts *EditMessageTextOpts) (*types.Me
 
 // EditMessageCaption methods's optional params
 type EditMessageCaptionOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+// Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 func (b *Bot) EditMessageCaption(opts *EditMessageCaptionOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3096,6 +3212,7 @@ func (b *Bot) EditMessageCaption(opts *EditMessageCaptionOpts) (*types.Message, 
             params["caption_entities"] = string(bs)
         }
 
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
 
         if opts.ReplyMarkup != nil {
             bs, err := json.Marshal(opts.ReplyMarkup)
@@ -3121,13 +3238,14 @@ func (b *Bot) EditMessageCaption(opts *EditMessageCaptionOpts) (*types.Message, 
 
 // EditMessageMedia methods's optional params
 type EditMessageMediaOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+// Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -3142,6 +3260,7 @@ func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOp
     }
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3170,6 +3289,7 @@ func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOp
 
 // EditMessageLiveLocation methods's optional params
 type EditMessageLiveLocationOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
@@ -3188,6 +3308,7 @@ func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts 
     params["latitude"] = strconv.FormatFloat(latitude, 'E', -1, 64)
     params["longitude"] = strconv.FormatFloat(longitude, 'E', -1, 64)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3220,6 +3341,7 @@ func (b *Bot) EditMessageLiveLocation(latitude float64, longitude float64, opts 
 
 // StopMessageLiveLocation methods's optional params
 type StopMessageLiveLocationOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
@@ -3232,6 +3354,7 @@ func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types
     data_params := map[string]string{}
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3260,18 +3383,20 @@ func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types
 
 // EditMessageReplyMarkup methods's optional params
 type EditMessageReplyMarkupOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
+// Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 func (b *Bot) EditMessageReplyMarkup(opts *EditMessageReplyMarkupOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
@@ -3300,6 +3425,7 @@ func (b *Bot) EditMessageReplyMarkup(opts *EditMessageReplyMarkupOpts) (*types.M
 
 // StopPoll methods's optional params
 type StopPollOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
@@ -3311,6 +3437,7 @@ func (b *Bot) StopPoll(chatId int64, messageId int64, opts *StopPollOpts) (*type
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["message_id"] = strconv.FormatInt(messageId, 10)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
 
         if opts.ReplyMarkup != nil {
             bs, err := json.Marshal(opts.ReplyMarkup)
@@ -3392,6 +3519,7 @@ type SendStickerOpts struct {
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -3423,6 +3551,7 @@ func (b *Bot) SendSticker(chatId int64, sticker types.InputFile, opts *SendStick
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -3930,6 +4059,7 @@ func (b *Bot) AnswerWebAppQuery(webAppQueryId string, result *types.InlineQueryR
 // SendInvoice methods's optional params
 type SendInvoiceOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    ProviderToken string `json:"provider_token,omitempty"`
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
     SuggestedTipAmounts []int64 `json:"suggested_tip_amounts,omitempty"`
     StartParameter string `json:"start_parameter,omitempty"`
@@ -3947,12 +4077,13 @@ type SendInvoiceOpts struct {
     IsFlexible bool `json:"is_flexible,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
 // Use this method to send invoices. On success, the sent Message is returned.
-func (b *Bot) SendInvoice(chatId int64, title string, description string, payload string, providerToken string, currency string, prices []types.LabeledPrice, opts *SendInvoiceOpts) (*types.Message, error) {
+func (b *Bot) SendInvoice(chatId int64, title string, description string, payload string, currency string, prices []types.LabeledPrice, opts *SendInvoiceOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
@@ -3960,7 +4091,6 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
     params["title"] = title
     params["description"] = description
     params["payload"] = payload
-    params["provider_token"] = providerToken
     params["currency"] = currency
 
     if prices != nil {
@@ -3973,6 +4103,7 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
 
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["provider_token"] = opts.ProviderToken
         params["max_tip_amount"] = strconv.FormatInt(opts.MaxTipAmount, 10)
 
         if opts.SuggestedTipAmounts != nil {
@@ -3998,6 +4129,7 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
         params["is_flexible"] = strconv.FormatBool(opts.IsFlexible)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -4032,6 +4164,7 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
 
 // CreateInvoiceLink methods's optional params
 type CreateInvoiceLinkOpts struct {
+    ProviderToken string `json:"provider_token,omitempty"`
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
     SuggestedTipAmounts []int64 `json:"suggested_tip_amounts,omitempty"`
     ProviderData string `json:"provider_data,omitempty"`
@@ -4049,14 +4182,13 @@ type CreateInvoiceLinkOpts struct {
 }
 
 // Use this method to create a link for an invoice. Returns the created invoice link as String on success.
-func (b *Bot) CreateInvoiceLink(title string, description string, payload string, providerToken string, currency string, prices []types.LabeledPrice, opts *CreateInvoiceLinkOpts) (string, error) {
+func (b *Bot) CreateInvoiceLink(title string, description string, payload string, currency string, prices []types.LabeledPrice, opts *CreateInvoiceLinkOpts) (string, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     params["title"] = title
     params["description"] = description
     params["payload"] = payload
-    params["provider_token"] = providerToken
     params["currency"] = currency
 
     if prices != nil {
@@ -4068,6 +4200,7 @@ func (b *Bot) CreateInvoiceLink(title string, description string, payload string
     }
 
     if opts != nil {
+        params["provider_token"] = opts.ProviderToken
         params["max_tip_amount"] = strconv.FormatInt(opts.MaxTipAmount, 10)
 
         if opts.SuggestedTipAmounts != nil {
@@ -4170,6 +4303,51 @@ func (b *Bot) AnswerPreCheckoutQuery(preCheckoutQueryId string, ok bool, opts *A
 
 }
 
+// GetStarTransactions methods's optional params
+type GetStarTransactionsOpts struct {
+    Offset int64 `json:"offset,omitempty"`
+    Limit int64 `json:"limit,omitempty"`
+}
+
+// Returns the bot's Telegram Star transactions in chronological order. On success, returns a StarTransactions object.
+func (b *Bot) GetStarTransactions(opts *GetStarTransactionsOpts) (*types.StarTransactions, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if opts != nil {
+        params["offset"] = strconv.FormatInt(opts.Offset, 10)
+        params["limit"] = strconv.FormatInt(opts.Limit, 10)
+    }
+
+
+    r, err := b.Request("getStarTransactions", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.StarTransactions
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Refunds a successful payment in Telegram Stars. Returns True on success.
+func (b *Bot) RefundStarPayment(userId int64, telegramPaymentChargeId string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["telegram_payment_charge_id"] = telegramPaymentChargeId
+
+    r, err := b.Request("refundStarPayment", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
 // Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
 func (b *Bot) SetPassportDataErrors(userId int64, errors []types.PassportElementError) (bool, error) {
@@ -4202,6 +4380,7 @@ type SendGameOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
@@ -4218,6 +4397,7 @@ func (b *Bot) SendGame(chatId int64, gameShortName string, opts *SendGameOpts) (
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)

@@ -190,6 +190,8 @@ type ChatFullInfo struct {
     PinnedMessage *Message `json:"pinned_message,omitempty"`
     // Optional. Default chat member permissions, for groups and supergroups
     Permissions *ChatPermissions `json:"permissions,omitempty"`
+    // Optional. True, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats.
+    CanSendPaidMedia bool `json:"can_send_paid_media,omitempty"`
     // Optional. For supergroups, the minimum allowed delay between consecutive messages sent by each unprivileged user; in seconds
     SlowModeDelay int64 `json:"slow_mode_delay,omitempty"`
     // Optional. For supergroups, the minimum number of boosts that a non-administrator user needs to add in order to ignore slow mode and chat permissions
@@ -269,12 +271,16 @@ type Message struct {
     Entities []MessageEntity `json:"entities,omitempty"`
     // Optional. Options used for link preview generation for the message, if it is a text message and link preview options were changed
     LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    // Optional. Unique identifier of the message effect added to the message
+    EffectId string `json:"effect_id,omitempty"`
     // Optional. Message is an animation, information about the animation. For backward compatibility, when this field is set, the document field will also be set
     Animation *Animation `json:"animation,omitempty"`
     // Optional. Message is an audio file, information about the file
     Audio *Audio `json:"audio,omitempty"`
     // Optional. Message is a general file, information about the file
     Document *Document `json:"document,omitempty"`
+    // Optional. Message contains paid media; information about the paid media
+    PaidMedia *PaidMediaInfo `json:"paid_media,omitempty"`
     // Optional. Message is a photo, available sizes of the photo
     Photo []PhotoSize `json:"photo,omitempty"`
     // Optional. Message is a sticker, information about the sticker
@@ -287,10 +293,12 @@ type Message struct {
     VideoNote *VideoNote `json:"video_note,omitempty"`
     // Optional. Message is a voice message, information about the file
     Voice *Voice `json:"voice,omitempty"`
-    // Optional. Caption for the animation, audio, document, photo, video or voice
+    // Optional. Caption for the animation, audio, document, paid media, photo, video or voice
     Caption string `json:"caption,omitempty"`
     // Optional. For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear in the caption
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. True, if the message media is covered by a spoiler animation
     HasMediaSpoiler bool `json:"has_media_spoiler,omitempty"`
     // Optional. Message is a shared contact, information about the contact
@@ -333,6 +341,8 @@ type Message struct {
     Invoice *Invoice `json:"invoice,omitempty"`
     // Optional. Message is a service message about a successful payment, information about the payment. More about payments: https://core.telegram.org/bots/api#payments
     SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
+    // Optional. Message is a service message about a refunded payment, information about the payment. More about payments: https://core.telegram.org/bots/api#payments
+    RefundedPayment *RefundedPayment `json:"refunded_payment,omitempty"`
     // Optional. Service message: users were shared with the bot
     UsersShared *UsersShared `json:"users_shared,omitempty"`
     // Optional. Service message: a chat was shared with the bot
@@ -431,9 +441,11 @@ type MaybeInaccessibleMessage struct {
     Text string `json:"text,omitempty"`
     Entities []MessageEntity `json:"entities,omitempty"`
     LinkPreviewOptions *LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    EffectId string `json:"effect_id,omitempty"`
     Animation *Animation `json:"animation,omitempty"`
     Audio *Audio `json:"audio,omitempty"`
     Document *Document `json:"document,omitempty"`
+    PaidMedia *PaidMediaInfo `json:"paid_media,omitempty"`
     Photo []PhotoSize `json:"photo,omitempty"`
     Sticker *Sticker `json:"sticker,omitempty"`
     Story *Story `json:"story,omitempty"`
@@ -442,6 +454,7 @@ type MaybeInaccessibleMessage struct {
     Voice *Voice `json:"voice,omitempty"`
     Caption string `json:"caption,omitempty"`
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     HasMediaSpoiler bool `json:"has_media_spoiler,omitempty"`
     Contact *Contact `json:"contact,omitempty"`
     Dice *Dice `json:"dice,omitempty"`
@@ -463,6 +476,7 @@ type MaybeInaccessibleMessage struct {
     PinnedMessage *MaybeInaccessibleMessage `json:"pinned_message,omitempty"`
     Invoice *Invoice `json:"invoice,omitempty"`
     SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
+    RefundedPayment *RefundedPayment `json:"refunded_payment,omitempty"`
     UsersShared *UsersShared `json:"users_shared,omitempty"`
     ChatShared *ChatShared `json:"chat_shared,omitempty"`
     ConnectedWebsite string `json:"connected_website,omitempty"`
@@ -492,7 +506,7 @@ type MaybeInaccessibleMessage struct {
 
 // This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc.
 type MessageEntity struct {
-    // Type of the entity. Currently, can be "mention" (@username), "hashtag" (#hashtag), "cashtag" ($USD), "bot_command" (/start@jobs_bot), "url" (https://telegram.org), "email" (do-not-reply@telegram.org), "phone_number" (+1-212-555-0123), "bold" (bold text), "italic" (italic text), "underline" (underlined text), "strikethrough" (strikethrough text), "spoiler" (spoiler message), "blockquote" (block quotation), "code" (monowidth string), "pre" (monowidth block), "text_link" (for clickable text URLs), "text_mention" (for users without usernames), "custom_emoji" (for inline custom emoji stickers)
+    // Type of the entity. Currently, can be "mention" (@username), "hashtag" (#hashtag), "cashtag" ($USD), "bot_command" (/start@jobs_bot), "url" (https://telegram.org), "email" (do-not-reply@telegram.org), "phone_number" (+1-212-555-0123), "bold" (bold text), "italic" (italic text), "underline" (underlined text), "strikethrough" (strikethrough text), "spoiler" (spoiler message), "blockquote" (block quotation), "expandable_blockquote" (collapsed-by-default block quotation), "code" (monowidth string), "pre" (monowidth block), "text_link" (for clickable text URLs), "text_mention" (for users without usernames), "custom_emoji" (for inline custom emoji stickers)
     Type string `json:"type"`
     // Offset in UTF-16 code units to the start of the entity
     Offset int64 `json:"offset"`
@@ -538,6 +552,8 @@ type ExternalReplyInfo struct {
     Audio *Audio `json:"audio,omitempty"`
     // Optional. Message is a general file, information about the file
     Document *Document `json:"document,omitempty"`
+    // Optional. Message contains paid media; information about the paid media
+    PaidMedia *PaidMediaInfo `json:"paid_media,omitempty"`
     // Optional. Message is a photo, available sizes of the photo
     Photo []PhotoSize `json:"photo,omitempty"`
     // Optional. Message is a sticker, information about the sticker
@@ -692,17 +708,17 @@ type Animation struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Video width as defined by sender
+    // Video width as defined by the sender
     Width int64 `json:"width"`
-    // Video height as defined by sender
+    // Video height as defined by the sender
     Height int64 `json:"height"`
-    // Duration of the video in seconds as defined by sender
+    // Duration of the video in seconds as defined by the sender
     Duration int64 `json:"duration"`
-    // Optional. Animation thumbnail as defined by sender
+    // Optional. Animation thumbnail as defined by the sender
     Thumbnail *PhotoSize `json:"thumbnail,omitempty"`
-    // Optional. Original animation filename as defined by sender
+    // Optional. Original animation filename as defined by the sender
     FileName string `json:"file_name,omitempty"`
-    // Optional. MIME type of the file as defined by sender
+    // Optional. MIME type of the file as defined by the sender
     MimeType string `json:"mime_type,omitempty"`
     // Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
     FileSize int64 `json:"file_size,omitempty"`
@@ -715,15 +731,15 @@ type Audio struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Duration of the audio in seconds as defined by sender
+    // Duration of the audio in seconds as defined by the sender
     Duration int64 `json:"duration"`
-    // Optional. Performer of the audio as defined by sender or by audio tags
+    // Optional. Performer of the audio as defined by the sender or by audio tags
     Performer string `json:"performer,omitempty"`
-    // Optional. Title of the audio as defined by sender or by audio tags
+    // Optional. Title of the audio as defined by the sender or by audio tags
     Title string `json:"title,omitempty"`
-    // Optional. Original filename as defined by sender
+    // Optional. Original filename as defined by the sender
     FileName string `json:"file_name,omitempty"`
-    // Optional. MIME type of the file as defined by sender
+    // Optional. MIME type of the file as defined by the sender
     MimeType string `json:"mime_type,omitempty"`
     // Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
     FileSize int64 `json:"file_size,omitempty"`
@@ -738,11 +754,11 @@ type Document struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Optional. Document thumbnail as defined by sender
+    // Optional. Document thumbnail as defined by the sender
     Thumbnail *PhotoSize `json:"thumbnail,omitempty"`
-    // Optional. Original filename as defined by sender
+    // Optional. Original filename as defined by the sender
     FileName string `json:"file_name,omitempty"`
-    // Optional. MIME type of the file as defined by sender
+    // Optional. MIME type of the file as defined by the sender
     MimeType string `json:"mime_type,omitempty"`
     // Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
     FileSize int64 `json:"file_size,omitempty"`
@@ -764,17 +780,17 @@ type Video struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Video width as defined by sender
+    // Video width as defined by the sender
     Width int64 `json:"width"`
-    // Video height as defined by sender
+    // Video height as defined by the sender
     Height int64 `json:"height"`
-    // Duration of the video in seconds as defined by sender
+    // Duration of the video in seconds as defined by the sender
     Duration int64 `json:"duration"`
     // Optional. Video thumbnail
     Thumbnail *PhotoSize `json:"thumbnail,omitempty"`
-    // Optional. Original filename as defined by sender
+    // Optional. Original filename as defined by the sender
     FileName string `json:"file_name,omitempty"`
-    // Optional. MIME type of the file as defined by sender
+    // Optional. MIME type of the file as defined by the sender
     MimeType string `json:"mime_type,omitempty"`
     // Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
     FileSize int64 `json:"file_size,omitempty"`
@@ -787,9 +803,9 @@ type VideoNote struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Video width and height (diameter of the video message) as defined by sender
+    // Video width and height (diameter of the video message) as defined by the sender
     Length int64 `json:"length"`
-    // Duration of the video in seconds as defined by sender
+    // Duration of the video in seconds as defined by the sender
     Duration int64 `json:"duration"`
     // Optional. Video thumbnail
     Thumbnail *PhotoSize `json:"thumbnail,omitempty"`
@@ -804,14 +820,77 @@ type Voice struct {
     FileId string `json:"file_id"`
     // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
     FileUniqueId string `json:"file_unique_id"`
-    // Duration of the audio in seconds as defined by sender
+    // Duration of the audio in seconds as defined by the sender
     Duration int64 `json:"duration"`
-    // Optional. MIME type of the file as defined by sender
+    // Optional. MIME type of the file as defined by the sender
     MimeType string `json:"mime_type,omitempty"`
     // Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
     FileSize int64 `json:"file_size,omitempty"`
 }
 
+
+// Describes the paid media added to a message.
+type PaidMediaInfo struct {
+    // The number of Telegram Stars that must be paid to buy access to the media
+    StarCount int64 `json:"star_count"`
+    // Information about the paid media
+    PaidMedia []PaidMedia `json:"paid_media"`
+}
+
+
+// This object describes paid media. Currently, it can be one of
+// - PaidMediaPreview
+// - PaidMediaPhoto
+// - PaidMediaVideo
+type PaidMedia struct {
+    Type string `json:"type"`
+    Width int64 `json:"width,omitempty"`
+    Height int64 `json:"height,omitempty"`
+    Duration int64 `json:"duration,omitempty"`
+    Photo []PhotoSize `json:"photo"`
+    Video *Video `json:"video"`
+}
+
+
+// The paid media isn't available before the payment.
+type PaidMediaPreview struct {
+    // Type of the paid media, always "preview"
+    Type string `json:"type"`
+    // Optional. Media width as defined by the sender
+    Width int64 `json:"width,omitempty"`
+    // Optional. Media height as defined by the sender
+    Height int64 `json:"height,omitempty"`
+    // Optional. Duration of the media in seconds as defined by the sender
+    Duration int64 `json:"duration,omitempty"`
+}
+
+func (v PaidMediaPreview) GetPaidMedia() PaidMediaPreview {
+    return v
+}
+
+// The paid media is a photo.
+type PaidMediaPhoto struct {
+    // Type of the paid media, always "photo"
+    Type string `json:"type"`
+    // The photo
+    Photo []PhotoSize `json:"photo"`
+}
+
+func (v PaidMediaPhoto) GetPaidMedia() PaidMediaPhoto {
+    return v
+}
+
+// The paid media is a video.
+type PaidMediaVideo struct {
+    // Type of the paid media, always "video"
+    Type string `json:"type"`
+    // The video
+    Video *Video `json:"video"`
+}
+
+func (v PaidMediaVideo) GetPaidMedia() PaidMediaVideo {
+    return v
+}
 
 // This object represents a phone contact.
 type Contact struct {
@@ -848,7 +927,7 @@ type PollOption struct {
 }
 
 
-// This object contains information about one answer option in a poll to send.
+// This object contains information about one answer option in a poll to be sent.
 type InputPollOption struct {
     // Option text, 1-100 characters
     Text string `json:"text"`
@@ -907,9 +986,9 @@ type Poll struct {
 
 // This object represents a point on the map.
 type Location struct {
-    // Latitude as defined by sender
+    // Latitude as defined by the sender
     Latitude float64 `json:"latitude"`
-    // Longitude as defined by sender
+    // Longitude as defined by the sender
     Longitude float64 `json:"longitude"`
     // Optional. The radius of uncertainty for the location, measured in meters; 0-1500
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
@@ -1367,7 +1446,7 @@ type ReplyKeyboardMarkup struct {
 
 func (m ReplyKeyboardMarkup) replyMarkup() {}
 
-// This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_users, request_chat, request_contact, request_location, and request_poll are mutually exclusive.
+// This object represents one button of the reply keyboard. At most one of the optional fields must be used to specify type of the button. For simple text buttons, String can be used instead of this object to specify the button text.
 // Note: request_users and request_chat options will only work in Telegram versions released after 3 February, 2023. Older clients will display unsupported message.
 type KeyboardButton struct {
     // Text of the button. If none of the optional fields are used, it will be sent as a message when the button is pressed
@@ -1460,13 +1539,13 @@ type InlineKeyboardMarkup struct {
 
 func (m InlineKeyboardMarkup) replyMarkup() {}
 
-// This object represents one button of an inline keyboard. You must use exactly one of the optional fields.
+// This object represents one button of an inline keyboard. Exactly one of the optional fields must be used to specify type of the button.
 type InlineKeyboardButton struct {
     // Label text on the button
     Text string `json:"text"`
     // Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.
     Url string `json:"url,omitempty"`
-    // Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes. Not supported for messages sent on behalf of a Telegram Business account.
+    // Optional. Data to be sent in a callback query to the bot when the button is pressed, 1-64 bytes
     CallbackData string `json:"callback_data,omitempty"`
     // Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a Telegram Business account.
     WebApp *WebAppInfo `json:"web_app,omitempty"`
@@ -1480,7 +1559,7 @@ type InlineKeyboardButton struct {
     SwitchInlineQueryChosenChat *SwitchInlineQueryChosenChat `json:"switch_inline_query_chosen_chat,omitempty"`
     // Optional. Description of the game that will be launched when the user presses the button. NOTE: This type of button must always be the first button in the first row.
     CallbackGame *CallbackGame `json:"callback_game,omitempty"`
-    // Optional. Specify True, to send a Pay button. NOTE: This type of button must always be the first button in the first row and can only be used in invoice messages.
+    // Optional. Specify True, to send a Pay button. Substrings "⭐" and "XTR" in the buttons's text will be replaced with a Telegram Star icon. NOTE: This type of button must always be the first button in the first row and can only be used in invoice messages.
     Pay bool `json:"pay,omitempty"`
 }
 
@@ -2171,7 +2250,7 @@ type MenuButtonWebApp struct {
     Type string `json:"type"`
     // Text on the button
     Text string `json:"text"`
-    // Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery.
+    // Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Alternatively, a t.me link to a Web App of the bot can be specified in the object instead of the Web App's URL, in which case the Web App will be opened as if the user pressed the link.
     WebApp *WebAppInfo `json:"web_app"`
 }
 
@@ -2333,6 +2412,7 @@ type InputMedia struct {
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     Width int64 `json:"width,omitempty"`
     Height int64 `json:"height,omitempty"`
     Duration int64 `json:"duration,omitempty"`
@@ -2356,6 +2436,8 @@ type InputMediaPhoto struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Pass True if the photo needs to be covered with a spoiler animation
     HasSpoiler bool `json:"has_spoiler,omitempty"`
 }
@@ -2378,6 +2460,8 @@ type InputMediaVideo struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Video width
     Width int64 `json:"width,omitempty"`
     // Optional. Video height
@@ -2408,6 +2492,8 @@ type InputMediaAnimation struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Animation width
     Width int64 `json:"width,omitempty"`
     // Optional. Animation height
@@ -2475,6 +2561,54 @@ type InputFile interface {
 
 }
 
+
+// This object describes the paid media to be sent. Currently, it can be one of
+// - InputPaidMediaPhoto
+// - InputPaidMediaVideo
+type InputPaidMedia struct {
+    Type string `json:"type"`
+    Media string `json:"media"`
+    Thumbnail string `json:"thumbnail,omitempty"`
+    Width int64 `json:"width,omitempty"`
+    Height int64 `json:"height,omitempty"`
+    Duration int64 `json:"duration,omitempty"`
+    SupportsStreaming bool `json:"supports_streaming,omitempty"`
+}
+
+
+// The paid media to send is a photo.
+type InputPaidMediaPhoto struct {
+    // Type of the media, must be photo
+    Type string `json:"type"`
+    // File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    Media string `json:"media"`
+}
+
+func (v InputPaidMediaPhoto) GetInputPaidMedia() InputPaidMediaPhoto {
+    return v
+}
+
+// The paid media to send is a video.
+type InputPaidMediaVideo struct {
+    // Type of the media, must be video
+    Type string `json:"type"`
+    // File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    Media string `json:"media"`
+    // Optional. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    Thumbnail string `json:"thumbnail,omitempty"`
+    // Optional. Video width
+    Width int64 `json:"width,omitempty"`
+    // Optional. Video height
+    Height int64 `json:"height,omitempty"`
+    // Optional. Video duration in seconds
+    Duration int64 `json:"duration,omitempty"`
+    // Optional. Pass True if the uploaded video is suitable for streaming
+    SupportsStreaming bool `json:"supports_streaming,omitempty"`
+}
+
+func (v InputPaidMediaVideo) GetInputPaidMedia() InputPaidMediaVideo {
+    return v
+}
 
 // This object represents a sticker.
 type Sticker struct {
@@ -2617,6 +2751,7 @@ type InlineQueryResult struct {
     DocumentFileId string `json:"document_file_id"`
     Description string `json:"description,omitempty"`
     GifFileId string `json:"gif_file_id"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     Mpeg4FileId string `json:"mpeg4_file_id"`
     PhotoFileId string `json:"photo_file_id"`
     StickerFileId string `json:"sticker_file_id"`
@@ -2723,6 +2858,8 @@ type InlineQueryResultPhoto struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the photo
@@ -2759,6 +2896,8 @@ type InlineQueryResultGif struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the GIF animation
@@ -2795,6 +2934,8 @@ type InlineQueryResultMpeg4Gif struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the video animation
@@ -2825,6 +2966,8 @@ type InlineQueryResultVideo struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Video width
     VideoWidth int64 `json:"video_width,omitempty"`
     // Optional. Video height
@@ -3075,6 +3218,8 @@ type InlineQueryResultCachedPhoto struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the photo
@@ -3101,6 +3246,8 @@ type InlineQueryResultCachedGif struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the GIF animation
@@ -3127,6 +3274,8 @@ type InlineQueryResultCachedMpeg4Gif struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the video animation
@@ -3201,6 +3350,8 @@ type InlineQueryResultCachedVideo struct {
     ParseMode string `json:"parse_mode,omitempty"`
     // Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+    // Optional. Pass True, if the caption must be shown above the message media
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     // Optional. Inline keyboard attached to the message
     ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
     // Optional. Content of the message to be sent instead of the video
@@ -3290,7 +3441,7 @@ type InputMessageContent struct {
     Vcard string `json:"vcard,omitempty"`
     Description string `json:"description"`
     Payload string `json:"payload"`
-    ProviderToken string `json:"provider_token"`
+    ProviderToken string `json:"provider_token,omitempty"`
     Currency string `json:"currency"`
     Prices []LabeledPrice `json:"prices"`
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
@@ -3394,13 +3545,13 @@ type InputInvoiceMessageContent struct {
     Description string `json:"description"`
     // Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
     Payload string `json:"payload"`
-    // Payment provider token, obtained via @BotFather
-    ProviderToken string `json:"provider_token"`
-    // Three-letter ISO 4217 currency code, see more on currencies
+    // Optional. Payment provider token, obtained via @BotFather. Pass an empty string for payments in Telegram Stars.
+    ProviderToken string `json:"provider_token,omitempty"`
+    // Three-letter ISO 4217 currency code, see more on currencies. Pass "XTR" for payments in Telegram Stars.
     Currency string `json:"currency"`
-    // Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
+    // Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars.
     Prices []LabeledPrice `json:"prices"`
-    // Optional. The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+    // Optional. The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars.
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
     // Optional. A JSON-serialized array of suggested amounts of tip in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
     SuggestedTipAmounts []int64 `json:"suggested_tip_amounts,omitempty"`
@@ -3414,19 +3565,19 @@ type InputInvoiceMessageContent struct {
     PhotoWidth int64 `json:"photo_width,omitempty"`
     // Optional. Photo height
     PhotoHeight int64 `json:"photo_height,omitempty"`
-    // Optional. Pass True if you require the user's full name to complete the order
+    // Optional. Pass True if you require the user's full name to complete the order. Ignored for payments in Telegram Stars.
     NeedName bool `json:"need_name,omitempty"`
-    // Optional. Pass True if you require the user's phone number to complete the order
+    // Optional. Pass True if you require the user's phone number to complete the order. Ignored for payments in Telegram Stars.
     NeedPhoneNumber bool `json:"need_phone_number,omitempty"`
-    // Optional. Pass True if you require the user's email address to complete the order
+    // Optional. Pass True if you require the user's email address to complete the order. Ignored for payments in Telegram Stars.
     NeedEmail bool `json:"need_email,omitempty"`
-    // Optional. Pass True if you require the user's shipping address to complete the order
+    // Optional. Pass True if you require the user's shipping address to complete the order. Ignored for payments in Telegram Stars.
     NeedShippingAddress bool `json:"need_shipping_address,omitempty"`
-    // Optional. Pass True if the user's phone number should be sent to provider
+    // Optional. Pass True if the user's phone number should be sent to the provider. Ignored for payments in Telegram Stars.
     SendPhoneNumberToProvider bool `json:"send_phone_number_to_provider,omitempty"`
-    // Optional. Pass True if the user's email address should be sent to provider
+    // Optional. Pass True if the user's email address should be sent to the provider. Ignored for payments in Telegram Stars.
     SendEmailToProvider bool `json:"send_email_to_provider,omitempty"`
-    // Optional. Pass True if the final price depends on the shipping method
+    // Optional. Pass True if the final price depends on the shipping method. Ignored for payments in Telegram Stars.
     IsFlexible bool `json:"is_flexible,omitempty"`
 }
 
@@ -3474,7 +3625,7 @@ type Invoice struct {
     Description string `json:"description"`
     // Unique bot deep-linking parameter that can be used to generate this invoice
     StartParameter string `json:"start_parameter"`
-    // Three-letter ISO 4217 currency code
+    // Three-letter ISO 4217 currency code, or "XTR" for payments in Telegram Stars
     Currency string `json:"currency"`
     // Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
     TotalAmount int64 `json:"total_amount"`
@@ -3524,11 +3675,11 @@ type ShippingOption struct {
 
 // This object contains basic information about a successful payment.
 type SuccessfulPayment struct {
-    // Three-letter ISO 4217 currency code
+    // Three-letter ISO 4217 currency code, or "XTR" for payments in Telegram Stars
     Currency string `json:"currency"`
     // Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
     TotalAmount int64 `json:"total_amount"`
-    // Bot specified invoice payload
+    // Bot-specified invoice payload
     InvoicePayload string `json:"invoice_payload"`
     // Optional. Identifier of the shipping option chosen by the user
     ShippingOptionId string `json:"shipping_option_id,omitempty"`
@@ -3541,13 +3692,28 @@ type SuccessfulPayment struct {
 }
 
 
+// This object contains basic information about a refunded payment.
+type RefundedPayment struct {
+    // Three-letter ISO 4217 currency code, or "XTR" for payments in Telegram Stars. Currently, always "XTR"
+    Currency string `json:"currency"`
+    // Total refunded price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45, total_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
+    TotalAmount int64 `json:"total_amount"`
+    // Bot-specified invoice payload
+    InvoicePayload string `json:"invoice_payload"`
+    // Telegram payment identifier
+    TelegramPaymentChargeId string `json:"telegram_payment_charge_id"`
+    // Optional. Provider payment identifier
+    ProviderPaymentChargeId string `json:"provider_payment_charge_id,omitempty"`
+}
+
+
 // This object contains information about an incoming shipping query.
 type ShippingQuery struct {
     // Unique query identifier
     Id string `json:"id"`
     // User who sent the query
     From *User `json:"from"`
-    // Bot specified invoice payload
+    // Bot-specified invoice payload
     InvoicePayload string `json:"invoice_payload"`
     // User specified shipping address
     ShippingAddress *ShippingAddress `json:"shipping_address"`
@@ -3560,16 +3726,142 @@ type PreCheckoutQuery struct {
     Id string `json:"id"`
     // User who sent the query
     From *User `json:"from"`
-    // Three-letter ISO 4217 currency code
+    // Three-letter ISO 4217 currency code, or "XTR" for payments in Telegram Stars
     Currency string `json:"currency"`
     // Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
     TotalAmount int64 `json:"total_amount"`
-    // Bot specified invoice payload
+    // Bot-specified invoice payload
     InvoicePayload string `json:"invoice_payload"`
     // Optional. Identifier of the shipping option chosen by the user
     ShippingOptionId string `json:"shipping_option_id,omitempty"`
     // Optional. Order information provided by the user
     OrderInfo *OrderInfo `json:"order_info,omitempty"`
+}
+
+
+// This object describes the state of a revenue withdrawal operation. Currently, it can be one of
+// - RevenueWithdrawalStatePending
+// - RevenueWithdrawalStateSucceeded
+// - RevenueWithdrawalStateFailed
+type RevenueWithdrawalState struct {
+    Type string `json:"type"`
+    Date int64 `json:"date"`
+    Url string `json:"url"`
+}
+
+
+// The withdrawal is in progress.
+type RevenueWithdrawalStatePending struct {
+    // Type of the state, always "pending"
+    Type string `json:"type"`
+}
+
+func (v RevenueWithdrawalStatePending) GetRevenueWithdrawalState() RevenueWithdrawalStatePending {
+    return v
+}
+
+// The withdrawal succeeded.
+type RevenueWithdrawalStateSucceeded struct {
+    // Type of the state, always "succeeded"
+    Type string `json:"type"`
+    // Date the withdrawal was completed in Unix time
+    Date int64 `json:"date"`
+    // An HTTPS URL that can be used to see transaction details
+    Url string `json:"url"`
+}
+
+func (v RevenueWithdrawalStateSucceeded) GetRevenueWithdrawalState() RevenueWithdrawalStateSucceeded {
+    return v
+}
+
+// The withdrawal failed and the transaction was refunded.
+type RevenueWithdrawalStateFailed struct {
+    // Type of the state, always "failed"
+    Type string `json:"type"`
+}
+
+func (v RevenueWithdrawalStateFailed) GetRevenueWithdrawalState() RevenueWithdrawalStateFailed {
+    return v
+}
+
+// This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it can be one of
+// - TransactionPartnerUser
+// - TransactionPartnerFragment
+// - TransactionPartnerTelegramAds
+// - TransactionPartnerOther
+type TransactionPartner struct {
+    Type string `json:"type"`
+    User *User `json:"user"`
+    InvoicePayload string `json:"invoice_payload,omitempty"`
+    WithdrawalState *RevenueWithdrawalState `json:"withdrawal_state,omitempty"`
+}
+
+
+// Describes a transaction with a user.
+type TransactionPartnerUser struct {
+    // Type of the transaction partner, always "user"
+    Type string `json:"type"`
+    // Information about the user
+    User *User `json:"user"`
+    // Optional. Bot-specified invoice payload
+    InvoicePayload string `json:"invoice_payload,omitempty"`
+}
+
+func (v TransactionPartnerUser) GetTransactionPartner() TransactionPartnerUser {
+    return v
+}
+
+// Describes a withdrawal transaction with Fragment.
+type TransactionPartnerFragment struct {
+    // Type of the transaction partner, always "fragment"
+    Type string `json:"type"`
+    // Optional. State of the transaction if the transaction is outgoing
+    WithdrawalState *RevenueWithdrawalState `json:"withdrawal_state,omitempty"`
+}
+
+func (v TransactionPartnerFragment) GetTransactionPartner() TransactionPartnerFragment {
+    return v
+}
+
+// Describes a withdrawal transaction to the Telegram Ads platform.
+type TransactionPartnerTelegramAds struct {
+    // Type of the transaction partner, always "telegram_ads"
+    Type string `json:"type"`
+}
+
+func (v TransactionPartnerTelegramAds) GetTransactionPartner() TransactionPartnerTelegramAds {
+    return v
+}
+
+// Describes a transaction with an unknown source or recipient.
+type TransactionPartnerOther struct {
+    // Type of the transaction partner, always "other"
+    Type string `json:"type"`
+}
+
+func (v TransactionPartnerOther) GetTransactionPartner() TransactionPartnerOther {
+    return v
+}
+
+// Describes a Telegram Star transaction.
+type StarTransaction struct {
+    // Unique identifier of the transaction. Coincides with the identifer of the original transaction for refund transactions. Coincides with SuccessfulPayment.telegram_payment_charge_id for successful incoming payments from users.
+    Id string `json:"id"`
+    // Number of Telegram Stars transferred by the transaction
+    Amount int64 `json:"amount"`
+    // Date the transaction was created in Unix time
+    Date int64 `json:"date"`
+    // Optional. Source of an incoming transaction (e.g., a user purchasing goods or services, Fragment refunding a failed withdrawal). Only for incoming transactions
+    Source *TransactionPartner `json:"source,omitempty"`
+    // Optional. Receiver of an outgoing transaction (e.g., a user for a purchase refund, Fragment for a withdrawal). Only for outgoing transactions
+    Receiver *TransactionPartner `json:"receiver,omitempty"`
+}
+
+
+// Contains a list of Telegram Star transactions.
+type StarTransactions struct {
+    // The list of transactions
+    Transactions []StarTransaction `json:"transactions"`
 }
 
 
@@ -3876,6 +4168,16 @@ func UnmarshalUserArray(r json.RawMessage) (*[]User, error) {
     return tmp, err
 }
 
+// Unmarshal PaidMedia json arrays
+func UnmarshalPaidMediaArray(r json.RawMessage) (*[]PaidMedia, error) {
+    var tmp *[]PaidMedia
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
 // Unmarshal PollOption json arrays
 func UnmarshalPollOptionArray(r json.RawMessage) (*[]PollOption, error) {
     var tmp *[]PollOption
@@ -3949,6 +4251,16 @@ func UnmarshalStickerArray(r json.RawMessage) (*[]Sticker, error) {
 // Unmarshal LabeledPrice json arrays
 func UnmarshalLabeledPriceArray(r json.RawMessage) (*[]LabeledPrice, error) {
     var tmp *[]LabeledPrice
+    err := json.Unmarshal(r, &tmp)
+    if err != nil {
+        return nil, err
+    }
+    return tmp, err
+}
+
+// Unmarshal StarTransaction json arrays
+func UnmarshalStarTransactionArray(r json.RawMessage) (*[]StarTransaction, error) {
+    var tmp *[]StarTransaction
     err := json.Unmarshal(r, &tmp)
     if err != nil {
         return nil, err
