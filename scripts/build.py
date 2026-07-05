@@ -194,27 +194,47 @@ def get_field_text(field_name, def_types, field, comments=True):
 def get_inheritance(subclasses, subclass_dict, schema, name):
     field_text = ''
     sub_fields_list = []
+
     for subclass in subclasses:
-        subclass_dict.update({subclass: name})
+        subclass_dict[subclass] = name
+
         sub_schema = schema.get(subclass)
-        text = ''
-        for sub_fields in sub_schema.get('fields'):
-            sub_field_name = sub_fields.get('name')
+
+        if sub_schema is None:
+            print(f"WARNING: subtype '{subclass}' not found in schema")
+            continue
+
+        fields = sub_schema.get("fields") or []
+
+        text = ""
+
+        for sub_fields in fields:
+            sub_field_name = sub_fields.get("name")
+
             if sub_field_name in sub_fields_list:
                 continue
-            else:
-                sub_fields_list.append(sub_field_name)
-                for sub_types in sub_fields.get('types'):
-                    sub_def_types = get_type(sub_types)
-                    if "InputFile" in sub_def_types:
-                        continue
-                    if sub_field_name == "chat_id" and sub_def_types == "string":
-                        continue
 
-                    text += get_field_text(sub_field_name, sub_def_types, sub_fields, comments=False)
+            sub_fields_list.append(sub_field_name)
+
+            for sub_types in sub_fields.get("types", []):
+                sub_def_types = get_type(sub_types)
+
+                if "InputFile" in sub_def_types:
+                    continue
+
+                if sub_field_name == "chat_id" and sub_def_types == "string":
+                    continue
+
+                text += get_field_text(
+                    sub_field_name,
+                    sub_def_types,
+                    sub_fields,
+                    comments=False,
+                )
+
         field_text += text
-    return field_text
 
+    return field_text
 
 def get_unmarshals():
     content = ''
