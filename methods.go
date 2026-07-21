@@ -59,7 +59,7 @@ type SetWebhookOpts struct {
     SecretToken string `json:"secret_token,omitempty"`
 }
 
-// Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts. Returns True on success.
+// Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request (a request with response HTTP status code different from 2XY), we will repeat the request and give up after a reasonable amount of attempts. Returns True on success.
 // If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter secret_token. If specified, the request will contain a header "X-Telegram-Bot-Api-Secret-Token" with the secret token as content.
 func (b *Bot) SetWebhook(url string, opts *SetWebhookOpts) (bool, error) {
     params := map[string]string{}
@@ -199,12 +199,17 @@ func (b *Bot) Close() (bool, error) {
 type SendMessageOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     Entities []types.MessageEntity `json:"entities,omitempty"`
     LinkPreviewOptions *types.LinkPreviewOptions `json:"link_preview_options,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -219,6 +224,9 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["parse_mode"] = opts.ParseMode
 
         if opts.Entities != nil {
@@ -240,7 +248,17 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
 
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -276,8 +294,12 @@ func (b *Bot) SendMessage(chatId int64, text string, opts *SendMessageOpts) (*ty
 // ForwardMessage methods's optional params
 type ForwardMessageOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    VideoStartTimestamp int64 `json:"video_start_timestamp,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
 }
 
 // Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
@@ -290,8 +312,20 @@ func (b *Bot) ForwardMessage(chatId int64, fromChatId int64, messageId int64, op
     params["message_id"] = strconv.FormatInt(messageId, 10)
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["video_start_timestamp"] = strconv.FormatInt(opts.VideoStartTimestamp, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
     }
 
 
@@ -309,11 +343,12 @@ func (b *Bot) ForwardMessage(chatId int64, fromChatId int64, messageId int64, op
 // ForwardMessages methods's optional params
 type ForwardMessagesOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
 }
 
-// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent messages is returned.
 func (b *Bot) ForwardMessages(chatId int64, fromChatId int64, messageIds []int64, opts *ForwardMessagesOpts) ([]types.MessageId, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -331,6 +366,7 @@ func (b *Bot) ForwardMessages(chatId int64, fromChatId int64, messageIds []int64
 
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
     }
@@ -350,17 +386,22 @@ func (b *Bot) ForwardMessages(chatId int64, fromChatId int64, messageIds []int64
 // CopyMessage methods's optional params
 type CopyMessageOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    VideoStartTimestamp int64 `json:"video_start_timestamp,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
     ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
 func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts *CopyMessageOpts) (*types.MessageId, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -370,6 +411,8 @@ func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts 
     params["message_id"] = strconv.FormatInt(messageId, 10)
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["video_start_timestamp"] = strconv.FormatInt(opts.VideoStartTimestamp, 10)
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -384,6 +427,17 @@ func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts 
         params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
+        params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -419,12 +473,13 @@ func (b *Bot) CopyMessage(chatId int64, fromChatId int64, messageId int64, opts 
 // CopyMessages methods's optional params
 type CopyMessagesOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
     RemoveCaption bool `json:"remove_caption,omitempty"`
 }
 
-// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
 func (b *Bot) CopyMessages(chatId int64, fromChatId int64, messageIds []int64, opts *CopyMessagesOpts) ([]types.MessageId, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -442,6 +497,7 @@ func (b *Bot) CopyMessages(chatId int64, fromChatId int64, messageIds []int64, o
 
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
         params["remove_caption"] = strconv.FormatBool(opts.RemoveCaption)
@@ -463,6 +519,9 @@ func (b *Bot) CopyMessages(chatId int64, fromChatId int64, messageIds []int64, o
 type SendPhotoOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -470,7 +529,9 @@ type SendPhotoOpts struct {
     HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -499,6 +560,9 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -514,7 +578,17 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
         params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -547,10 +621,134 @@ func (b *Bot) SendPhoto(chatId int64, photo types.InputFile, opts *SendPhotoOpts
 
 }
 
+// SendLivePhoto methods's optional params
+type SendLivePhotoOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
+    Caption string `json:"caption,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
+    HasSpoiler bool `json:"has_spoiler,omitempty"`
+    DisableNotification bool `json:"disable_notification,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
+    ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
+    ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to send live photos. On success, the sent Message is returned.
+func (b *Bot) SendLivePhoto(chatId int64, livePhoto types.InputFile, photo types.InputFile, opts *SendLivePhotoOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    if livePhoto != nil {
+        switch f := livePhoto.(type) {
+        case string:
+            _, err := os.Stat(f)
+            if err != nil {
+                params["live_photo"] = f
+            } else {
+                params["live_photo"] = "attach://live_photo"
+                data_params["live_photo"] = f
+            }
+        default:
+            return nil, fmt.Errorf("unknown type for InputFile: %T", livePhoto)
+        }
+    }
+
+    if photo != nil {
+        switch f := photo.(type) {
+        case string:
+            _, err := os.Stat(f)
+            if err != nil {
+                params["photo"] = f
+            } else {
+                params["photo"] = "attach://photo"
+                data_params["photo"] = f
+            }
+        default:
+            return nil, fmt.Errorf("unknown type for InputFile: %T", photo)
+        }
+    }
+    if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
+        params["caption"] = opts.Caption
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.CaptionEntities != nil {
+            bs, err := json.Marshal(opts.CaptionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field caption_entities: %w", err)
+            }
+            params["caption_entities"] = string(bs)
+        }
+
+        params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
+        params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
+        params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
+        params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyParameters != nil {
+            bs, err := json.Marshal(opts.ReplyParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_parameters: %w", err)
+            }
+            params["reply_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendLivePhoto", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SendAudio methods's optional params
 type SendAudioOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -560,7 +758,9 @@ type SendAudioOpts struct {
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -590,6 +790,9 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -621,7 +824,17 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -658,6 +871,9 @@ func (b *Bot) SendAudio(chatId int64, audio types.InputFile, opts *SendAudioOpts
 type SendDocumentOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
@@ -665,7 +881,9 @@ type SendDocumentOpts struct {
     DisableContentTypeDetection bool `json:"disable_content_type_detection,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -694,6 +912,9 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
 
         if opts.Thumbnail != nil {
             switch f := opts.Thumbnail.(type) {
@@ -723,7 +944,17 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
         params["disable_content_type_detection"] = strconv.FormatBool(opts.DisableContentTypeDetection)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -760,10 +991,15 @@ func (b *Bot) SendDocument(chatId int64, document types.InputFile, opts *SendDoc
 type SendVideoOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
     Height int64 `json:"height,omitempty"`
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
+    Cover types.InputFile `json:"cover,omitempty"`
+    StartTimestamp int64 `json:"start_timestamp,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
@@ -772,7 +1008,9 @@ type SendVideoOpts struct {
     SupportsStreaming bool `json:"supports_streaming,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -801,6 +1039,9 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["width"] = strconv.FormatInt(opts.Width, 10)
         params["height"] = strconv.FormatInt(opts.Height, 10)
@@ -819,6 +1060,22 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
                 return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Thumbnail)
             }
         }
+
+        if opts.Cover != nil {
+            switch f := opts.Cover.(type) {
+            case string:
+                _, err := os.Stat(f)
+                if err != nil {
+                    params["cover"] = f
+                } else {
+                    params["cover"] = "attach://cover"
+                    data_params["cover"] = f
+                }
+            default:
+                return nil, fmt.Errorf("unknown type for InputFile: %T", opts.Cover)
+            }
+        }
+        params["start_timestamp"] = strconv.FormatInt(opts.StartTimestamp, 10)
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -835,7 +1092,17 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
         params["supports_streaming"] = strconv.FormatBool(opts.SupportsStreaming)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -872,6 +1139,9 @@ func (b *Bot) SendVideo(chatId int64, video types.InputFile, opts *SendVideoOpts
 type SendAnimationOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Width int64 `json:"width,omitempty"`
     Height int64 `json:"height,omitempty"`
@@ -883,7 +1153,9 @@ type SendAnimationOpts struct {
     HasSpoiler bool `json:"has_spoiler,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -912,6 +1184,9 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["width"] = strconv.FormatInt(opts.Width, 10)
         params["height"] = strconv.FormatInt(opts.Height, 10)
@@ -945,7 +1220,17 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
         params["has_spoiler"] = strconv.FormatBool(opts.HasSpoiler)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -982,13 +1267,18 @@ func (b *Bot) SendAnimation(chatId int64, animation types.InputFile, opts *SendA
 type SendVoiceOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1017,6 +1307,9 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -1031,7 +1324,17 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1068,12 +1371,17 @@ func (b *Bot) SendVoice(chatId int64, voice types.InputFile, opts *SendVoiceOpts
 type SendVideoNoteOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Duration int64 `json:"duration,omitempty"`
     Length int64 `json:"length,omitempty"`
     Thumbnail types.InputFile `json:"thumbnail,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1102,6 +1410,9 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["duration"] = strconv.FormatInt(opts.Duration, 10)
         params["length"] = strconv.FormatInt(opts.Length, 10)
 
@@ -1121,7 +1432,17 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
         }
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1156,17 +1477,23 @@ func (b *Bot) SendVideoNote(chatId int64, videoNote types.InputFile, opts *SendV
 
 // SendPaidMedia methods's optional params
 type SendPaidMediaOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    Payload string `json:"payload,omitempty"`
     Caption string `json:"caption,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
     ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to send paid media to channel chats. On success, the sent Message is returned.
+// Use this method to send paid media. On success, the sent Message is returned.
 func (b *Bot) SendPaidMedia(chatId int64, starCount int64, media []types.InputPaidMedia, opts *SendPaidMediaOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -1183,6 +1510,10 @@ func (b *Bot) SendPaidMedia(chatId int64, starCount int64, media []types.InputPa
     }
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["payload"] = opts.Payload
         params["caption"] = opts.Caption
         params["parse_mode"] = opts.ParseMode
 
@@ -1197,6 +1528,16 @@ func (b *Bot) SendPaidMedia(chatId int64, starCount int64, media []types.InputPa
         params["show_caption_above_media"] = strconv.FormatBool(opts.ShowCaptionAboveMedia)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1233,13 +1574,15 @@ func (b *Bot) SendPaidMedia(chatId int64, starCount int64, media []types.InputPa
 type SendMediaGroupOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
 }
 
-// Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Messages that were sent is returned.
+// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
 func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *SendMediaGroupOpts) ([]types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -1257,8 +1600,10 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
@@ -1287,13 +1632,18 @@ func (b *Bot) SendMediaGroup(chatId int64, media []types.InputMediaAudio, opts *
 type SendLocationOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     HorizontalAccuracy float64 `json:"horizontal_accuracy,omitempty"`
     LivePeriod int64 `json:"live_period,omitempty"`
     Heading int64 `json:"heading,omitempty"`
     ProximityAlertRadius int64 `json:"proximity_alert_radius,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1309,13 +1659,26 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["horizontal_accuracy"] = strconv.FormatFloat(opts.HorizontalAccuracy, 'E', -1, 64)
         params["live_period"] = strconv.FormatInt(opts.LivePeriod, 10)
         params["heading"] = strconv.FormatInt(opts.Heading, 10)
         params["proximity_alert_radius"] = strconv.FormatInt(opts.ProximityAlertRadius, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1352,13 +1715,18 @@ func (b *Bot) SendLocation(chatId int64, latitude float64, longitude float64, op
 type SendVenueOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     FoursquareId string `json:"foursquare_id,omitempty"`
     FoursquareType string `json:"foursquare_type,omitempty"`
     GooglePlaceId string `json:"google_place_id,omitempty"`
     GooglePlaceType string `json:"google_place_type,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1376,13 +1744,26 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["foursquare_id"] = opts.FoursquareId
         params["foursquare_type"] = opts.FoursquareType
         params["google_place_id"] = opts.GooglePlaceId
         params["google_place_type"] = opts.GooglePlaceType
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1419,11 +1800,16 @@ func (b *Bot) SendVenue(chatId int64, latitude float64, longitude float64, title
 type SendContactOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     LastName string `json:"last_name,omitempty"`
     Vcard string `json:"vcard,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1439,11 +1825,24 @@ func (b *Bot) SendContact(chatId int64, phoneNumber string, firstName string, op
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["last_name"] = opts.LastName
         params["vcard"] = opts.Vcard
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1485,15 +1884,27 @@ type SendPollOpts struct {
     IsAnonymous bool `json:"is_anonymous,omitempty"`
     Type string `json:"type,omitempty"`
     AllowsMultipleAnswers bool `json:"allows_multiple_answers,omitempty"`
-    CorrectOptionId int64 `json:"correct_option_id,omitempty"`
+    AllowsRevoting bool `json:"allows_revoting,omitempty"`
+    ShuffleOptions bool `json:"shuffle_options,omitempty"`
+    AllowAddingOptions bool `json:"allow_adding_options,omitempty"`
+    HideResultsUntilCloses bool `json:"hide_results_until_closes,omitempty"`
+    MembersOnly bool `json:"members_only,omitempty"`
+    CountryCodes []string `json:"country_codes,omitempty"`
+    CorrectOptionIds []int64 `json:"correct_option_ids,omitempty"`
     Explanation string `json:"explanation,omitempty"`
     ExplanationParseMode string `json:"explanation_parse_mode,omitempty"`
     ExplanationEntities []types.MessageEntity `json:"explanation_entities,omitempty"`
+    ExplanationMedia *types.InputPollMedia `json:"explanation_media,omitempty"`
     OpenPeriod int64 `json:"open_period,omitempty"`
     CloseDate int64 `json:"close_date,omitempty"`
     IsClosed bool `json:"is_closed,omitempty"`
+    Description string `json:"description,omitempty"`
+    DescriptionParseMode string `json:"description_parse_mode,omitempty"`
+    DescriptionEntities []types.MessageEntity `json:"description_entities,omitempty"`
+    Media *types.InputPollMedia `json:"media,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
@@ -1531,7 +1942,29 @@ func (b *Bot) SendPoll(chatId int64, question string, options []types.InputPollO
         params["is_anonymous"] = strconv.FormatBool(opts.IsAnonymous)
         params["type"] = opts.Type
         params["allows_multiple_answers"] = strconv.FormatBool(opts.AllowsMultipleAnswers)
-        params["correct_option_id"] = strconv.FormatInt(opts.CorrectOptionId, 10)
+        params["allows_revoting"] = strconv.FormatBool(opts.AllowsRevoting)
+        params["shuffle_options"] = strconv.FormatBool(opts.ShuffleOptions)
+        params["allow_adding_options"] = strconv.FormatBool(opts.AllowAddingOptions)
+        params["hide_results_until_closes"] = strconv.FormatBool(opts.HideResultsUntilCloses)
+        params["members_only"] = strconv.FormatBool(opts.MembersOnly)
+
+        if opts.CountryCodes != nil {
+            bs, err := json.Marshal(opts.CountryCodes)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field country_codes: %w", err)
+            }
+            params["country_codes"] = string(bs)
+        }
+
+
+        if opts.CorrectOptionIds != nil {
+            bs, err := json.Marshal(opts.CorrectOptionIds)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field correct_option_ids: %w", err)
+            }
+            params["correct_option_ids"] = string(bs)
+        }
+
         params["explanation"] = opts.Explanation
         params["explanation_parse_mode"] = opts.ExplanationParseMode
 
@@ -1543,11 +1976,41 @@ func (b *Bot) SendPoll(chatId int64, question string, options []types.InputPollO
             params["explanation_entities"] = string(bs)
         }
 
+
+        if opts.ExplanationMedia != nil {
+            bs, err := json.Marshal(opts.ExplanationMedia)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field explanation_media: %w", err)
+            }
+            params["explanation_media"] = string(bs)
+        }
+
         params["open_period"] = strconv.FormatInt(opts.OpenPeriod, 10)
         params["close_date"] = strconv.FormatInt(opts.CloseDate, 10)
         params["is_closed"] = strconv.FormatBool(opts.IsClosed)
+        params["description"] = opts.Description
+        params["description_parse_mode"] = opts.DescriptionParseMode
+
+        if opts.DescriptionEntities != nil {
+            bs, err := json.Marshal(opts.DescriptionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field description_entities: %w", err)
+            }
+            params["description_entities"] = string(bs)
+        }
+
+
+        if opts.Media != nil {
+            bs, err := json.Marshal(opts.Media)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field media: %w", err)
+            }
+            params["media"] = string(bs)
+        }
+
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
@@ -1581,14 +2044,78 @@ func (b *Bot) SendPoll(chatId int64, question string, options []types.InputPollO
 
 }
 
+// SendChecklist methods's optional params
+type SendChecklistOpts struct {
+    DisableNotification bool `json:"disable_notification,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
+    ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
+func (b *Bot) SendChecklist(businessConnectionId string, chatId int64, checklist *types.InputChecklist, opts *SendChecklistOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    if checklist != nil {
+        bs, err := json.Marshal(checklist)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field checklist: %w", err)
+        }
+        params["checklist"] = string(bs)
+    }
+
+    if opts != nil {
+        params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.ReplyParameters != nil {
+            bs, err := json.Marshal(opts.ReplyParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_parameters: %w", err)
+            }
+            params["reply_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendChecklist", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SendDice methods's optional params
 type SendDiceOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -1602,10 +2129,21 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -1634,6 +2172,48 @@ func (b *Bot) SendDice(chatId int64, opts *SendDiceOpts) (*types.Message, error)
 
     
     var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SendMessageDraft methods's optional params
+type SendMessageDraftOpts struct {
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    Text string `json:"text,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    Entities []types.MessageEntity `json:"entities,omitempty"`
+}
+
+// Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
+func (b *Bot) SendMessageDraft(chatId int64, draftId int64, opts *SendMessageDraftOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["draft_id"] = strconv.FormatInt(draftId, 10)
+    if opts != nil {
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["text"] = opts.Text
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.Entities != nil {
+            bs, err := json.Marshal(opts.Entities)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field entities: %w", err)
+            }
+            params["entities"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendMessageDraft", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -1675,7 +2255,7 @@ type SetMessageReactionOpts struct {
     IsBig bool `json:"is_big,omitempty"`
 }
 
-// Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns True on success.
+// Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.
 func (b *Bot) SetMessageReaction(chatId int64, messageId int64, opts *SetMessageReactionOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -1732,6 +2312,64 @@ func (b *Bot) GetUserProfilePhotos(userId int64, opts *GetUserProfilePhotosOpts)
 
     
     var res *types.UserProfilePhotos
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetUserProfileAudios methods's optional params
+type GetUserProfileAudiosOpts struct {
+    Offset int64 `json:"offset,omitempty"`
+    Limit int64 `json:"limit,omitempty"`
+}
+
+// Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object.
+func (b *Bot) GetUserProfileAudios(userId int64, opts *GetUserProfileAudiosOpts) (*types.UserProfileAudios, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    if opts != nil {
+        params["offset"] = strconv.FormatInt(opts.Offset, 10)
+        params["limit"] = strconv.FormatInt(opts.Limit, 10)
+    }
+
+
+    r, err := b.Request("getUserProfileAudios", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.UserProfileAudios
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetUserEmojiStatus methods's optional params
+type SetUserEmojiStatusOpts struct {
+    EmojiStatusCustomEmojiId string `json:"emoji_status_custom_emoji_id,omitempty"`
+    EmojiStatusExpirationDate int64 `json:"emoji_status_expiration_date,omitempty"`
+}
+
+// Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method requestEmojiStatusAccess. Returns True on success.
+func (b *Bot) SetUserEmojiStatus(userId int64, opts *SetUserEmojiStatusOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    if opts != nil {
+        params["emoji_status_custom_emoji_id"] = opts.EmojiStatusCustomEmojiId
+        params["emoji_status_expiration_date"] = strconv.FormatInt(opts.EmojiStatusExpirationDate, 10)
+    }
+
+
+    r, err := b.Request("setUserEmojiStatus", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -1867,6 +2505,8 @@ type PromoteChatMemberOpts struct {
     CanEditMessages bool `json:"can_edit_messages,omitempty"`
     CanPinMessages bool `json:"can_pin_messages,omitempty"`
     CanManageTopics bool `json:"can_manage_topics,omitempty"`
+    CanManageDirectMessages bool `json:"can_manage_direct_messages,omitempty"`
+    CanManageTags bool `json:"can_manage_tags,omitempty"`
 }
 
 // Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success.
@@ -1892,6 +2532,8 @@ func (b *Bot) PromoteChatMember(chatId int64, userId int64, opts *PromoteChatMem
         params["can_edit_messages"] = strconv.FormatBool(opts.CanEditMessages)
         params["can_pin_messages"] = strconv.FormatBool(opts.CanPinMessages)
         params["can_manage_topics"] = strconv.FormatBool(opts.CanManageTopics)
+        params["can_manage_direct_messages"] = strconv.FormatBool(opts.CanManageDirectMessages)
+        params["can_manage_tags"] = strconv.FormatBool(opts.CanManageTags)
     }
 
 
@@ -1918,6 +2560,34 @@ func (b *Bot) SetChatAdministratorCustomTitle(chatId int64, userId int64, custom
     if err != nil {
         return false, err
     }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetChatMemberTag methods's optional params
+type SetChatMemberTagOpts struct {
+    Tag string `json:"tag,omitempty"`
+}
+
+// Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns True on success.
+func (b *Bot) SetChatMemberTag(chatId int64, userId int64, opts *SetChatMemberTagOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    if opts != nil {
+        params["tag"] = opts.Tag
+    }
+
+
+    r, err := b.Request("setChatMemberTag", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
     
     var res bool
     return res, json.Unmarshal(r, &res) 
@@ -2077,6 +2747,63 @@ func (b *Bot) EditChatInviteLink(chatId int64, inviteLink string, opts *EditChat
 
 }
 
+// CreateChatSubscriptionInviteLink methods's optional params
+type CreateChatSubscriptionInviteLinkOpts struct {
+    Name string `json:"name,omitempty"`
+}
+
+// Use this method to create a subscription invite link for a channel chat. The bot must have the can_invite_users administrator rights. The link can be edited using the method editChatSubscriptionInviteLink or revoked using the method revokeChatInviteLink. Returns the new invite link as a ChatInviteLink object.
+func (b *Bot) CreateChatSubscriptionInviteLink(chatId int64, subscriptionPeriod int64, subscriptionPrice int64, opts *CreateChatSubscriptionInviteLinkOpts) (*types.ChatInviteLink, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["subscription_period"] = strconv.FormatInt(subscriptionPeriod, 10)
+    params["subscription_price"] = strconv.FormatInt(subscriptionPrice, 10)
+    if opts != nil {
+        params["name"] = opts.Name
+    }
+
+
+    r, err := b.Request("createChatSubscriptionInviteLink", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.ChatInviteLink
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// EditChatSubscriptionInviteLink methods's optional params
+type EditChatSubscriptionInviteLinkOpts struct {
+    Name string `json:"name,omitempty"`
+}
+
+// Use this method to edit a subscription invite link created by the bot. The bot must have the can_invite_users administrator rights. Returns the edited invite link as a ChatInviteLink object.
+func (b *Bot) EditChatSubscriptionInviteLink(chatId int64, inviteLink string, opts *EditChatSubscriptionInviteLinkOpts) (*types.ChatInviteLink, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["invite_link"] = inviteLink
+    if opts != nil {
+        params["name"] = opts.Name
+    }
+
+
+    r, err := b.Request("editChatSubscriptionInviteLink", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.ChatInviteLink
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as ChatInviteLink object.
 func (b *Bot) RevokeChatInviteLink(chatId int64, inviteLink string) (*types.ChatInviteLink, error) {
     params := map[string]string{}
@@ -2119,6 +2846,40 @@ func (b *Bot) DeclineChatJoinRequest(chatId int64, userId int64) (bool, error) {
     params["user_id"] = strconv.FormatInt(userId, 10)
 
     r, err := b.Request("declineChatJoinRequest", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to process a received chat join request query. Returns True on success.
+func (b *Bot) AnswerChatJoinRequestQuery(chatJoinRequestQueryId string, result string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_join_request_query_id"] = chatJoinRequestQueryId
+    params["result"] = result
+
+    r, err := b.Request("answerChatJoinRequestQuery", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user interaction with the Mini App. Returns True on success.
+func (b *Bot) SendChatJoinRequestWebApp(chatJoinRequestQueryId string, webAppUrl string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_join_request_query_id"] = chatJoinRequestQueryId
+    params["web_app_url"] = webAppUrl
+
+    r, err := b.Request("sendChatJoinRequestWebApp", params, data_params)
     if err != nil {
         return false, err
     }
@@ -2221,10 +2982,11 @@ func (b *Bot) SetChatDescription(chatId int64, opts *SetChatDescriptionOpts) (bo
 
 // PinChatMessage methods's optional params
 type PinChatMessageOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
 }
 
-// Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success.
+// Use this method to add a message to the list of pinned messages in a chat. In private chats and channel direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in groups and channels respectively. Returns True on success.
 func (b *Bot) PinChatMessage(chatId int64, messageId int64, opts *PinChatMessageOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2232,6 +2994,7 @@ func (b *Bot) PinChatMessage(chatId int64, messageId int64, opts *PinChatMessage
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     params["message_id"] = strconv.FormatInt(messageId, 10)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
     }
 
@@ -2249,16 +3012,18 @@ func (b *Bot) PinChatMessage(chatId int64, messageId int64, opts *PinChatMessage
 
 // UnpinChatMessage methods's optional params
 type UnpinChatMessageOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
 }
 
-// Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success.
+// Use this method to remove a message from the list of pinned messages in a chat. In private chats and channel direct messages chats, all messages can be unpinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin messages in groups and channels respectively. Returns True on success.
 func (b *Bot) UnpinChatMessage(chatId int64, opts *UnpinChatMessageOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
     params["chat_id"] = strconv.FormatInt(chatId, 10)
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
     }
 
@@ -2274,7 +3039,7 @@ func (b *Bot) UnpinChatMessage(chatId int64, opts *UnpinChatMessageOpts) (bool, 
 
 }
 
-// Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success.
+// Use this method to clear the list of pinned messages in a chat. In private chats and channel direct messages chats, no additional rights are required to unpin all pinned messages. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin all pinned messages in groups and channels respectively. Returns True on success.
 func (b *Bot) UnpinAllChatMessages(chatId int64) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2322,23 +3087,34 @@ func (b *Bot) GetChat(chatId int64) (*types.ChatFullInfo, error) {
 
 }
 
-// Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects.
-func (b *Bot) GetChatAdministrators(chatId int64) ([]types.ChatMember, error) {
+// GetChatAdministrators methods's optional params
+type GetChatAdministratorsOpts struct {
+    ReturnBots bool `json:"return_bots,omitempty"`
+}
+
+// Use this method to get a list of administrators in a chat. Returns an Array of ChatMember objects.
+func (b *Bot) GetChatAdministrators(chatId int64, opts *GetChatAdministratorsOpts) ([]types.ChatMember, error) {
     params := map[string]string{}
     data_params := map[string]string{}
+
     params["chat_id"] = strconv.FormatInt(chatId, 10)
+    if opts != nil {
+        params["return_bots"] = strconv.FormatBool(opts.ReturnBots)
+    }
+
 
     r, err := b.Request("getChatAdministrators", params, data_params)
     if err != nil {
         return nil, err
     }
+
     
     var res []types.ChatMember
     return res, json.Unmarshal(r, &res) 
 
 }
 
-// Use this method to get the number of members in a chat. Returns Int on success.
+// Use this method to get the number of members in a chat. Returns Integer on success.
 func (b *Bot) GetChatMemberCount(chatId int64) (int64, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2367,6 +3143,23 @@ func (b *Bot) GetChatMember(chatId int64, userId int64) (*types.ChatMember, erro
     }
     
     var res *types.ChatMember
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of Message objects is returned.
+func (b *Bot) GetUserPersonalChatMessages(userId int64, limit int64) ([]types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["limit"] = strconv.FormatInt(limit, 10)
+
+    r, err := b.Request("getUserPersonalChatMessages", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res []types.Message
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -2425,7 +3218,7 @@ type CreateForumTopicOpts struct {
     IconCustomEmojiId string `json:"icon_custom_emoji_id,omitempty"`
 }
 
-// Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns information about the created topic as a ForumTopic object.
+// Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object.
 func (b *Bot) CreateForumTopic(chatId int64, name string, opts *CreateForumTopicOpts) (*types.ForumTopic, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2455,7 +3248,7 @@ type EditForumTopicOpts struct {
     IconCustomEmojiId string `json:"icon_custom_emoji_id,omitempty"`
 }
 
-// Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
+// Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
 func (b *Bot) EditForumTopic(chatId int64, messageThreadId int64, opts *EditForumTopicOpts) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2513,7 +3306,7 @@ func (b *Bot) ReopenForumTopic(chatId int64, messageThreadId int64) (bool, error
 
 }
 
-// Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
+// Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
 func (b *Bot) DeleteForumTopic(chatId int64, messageThreadId int64) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2530,7 +3323,7 @@ func (b *Bot) DeleteForumTopic(chatId int64, messageThreadId int64) (bool, error
 
 }
 
-// Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
+// Use this method to clear the list of pinned messages in a forum topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
 func (b *Bot) UnpinAllForumTopicMessages(chatId int64, messageThreadId int64) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2547,7 +3340,7 @@ func (b *Bot) UnpinAllForumTopicMessages(chatId int64, messageThreadId int64) (b
 
 }
 
-// Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success.
+// Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
 func (b *Bot) EditGeneralForumTopic(chatId int64, name string) (bool, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -2677,6 +3470,31 @@ func (b *Bot) AnswerCallbackQuery(callbackQueryId string, opts *AnswerCallbackQu
 
 }
 
+// Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+func (b *Bot) AnswerGuestQuery(guestQueryId string, result *types.InlineQueryResult) (*types.SentGuestMessage, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["guest_query_id"] = guestQueryId
+
+    if result != nil {
+        bs, err := json.Marshal(result)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field result: %w", err)
+        }
+        params["result"] = string(bs)
+    }
+
+
+    r, err := b.Request("answerGuestQuery", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.SentGuestMessage
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object.
 func (b *Bot) GetUserChatBoosts(chatId int64, userId int64) (*types.UserChatBoosts, error) {
     params := map[string]string{}
@@ -2706,6 +3524,90 @@ func (b *Bot) GetBusinessConnection(businessConnectionId string) (*types.Busines
     }
     
     var res *types.BusinessConnection
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to get the token of a managed bot. Returns the token as String on success.
+func (b *Bot) GetManagedBotToken(userId int64) (string, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    r, err := b.Request("getManagedBotToken", params, data_params)
+    if err != nil {
+        return "", err
+    }
+    
+    var res string
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success.
+func (b *Bot) ReplaceManagedBotToken(userId int64) (string, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    r, err := b.Request("replaceManagedBotToken", params, data_params)
+    if err != nil {
+        return "", err
+    }
+    
+    var res string
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on success.
+func (b *Bot) GetManagedBotAccessSettings(userId int64) (*types.BotAccessSettings, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    r, err := b.Request("getManagedBotAccessSettings", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.BotAccessSettings
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetManagedBotAccessSettings methods's optional params
+type SetManagedBotAccessSettingsOpts struct {
+    AddedUserIds []int64 `json:"added_user_ids,omitempty"`
+}
+
+// Use this method to change the access settings of a managed bot. Returns True on success.
+func (b *Bot) SetManagedBotAccessSettings(userId int64, isAccessRestricted bool, opts *SetManagedBotAccessSettingsOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["is_access_restricted"] = strconv.FormatBool(isAccessRestricted)
+    if opts != nil {
+
+        if opts.AddedUserIds != nil {
+            bs, err := json.Marshal(opts.AddedUserIds)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field added_user_ids: %w", err)
+            }
+            params["added_user_ids"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("setManagedBotAccessSettings", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
     return res, json.Unmarshal(r, &res) 
 
 }
@@ -2989,6 +3891,45 @@ func (b *Bot) GetMyShortDescription(opts *GetMyShortDescriptionOpts) (*types.Bot
 
 }
 
+// Changes the profile photo of the bot. Returns True on success.
+func (b *Bot) SetMyProfilePhoto(photo *types.InputProfilePhoto) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    if photo != nil {
+        bs, err := json.Marshal(photo)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field photo: %w", err)
+        }
+        params["photo"] = string(bs)
+    }
+
+
+    r, err := b.Request("setMyProfilePhoto", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Removes the profile photo of the bot. Requires no parameters. Returns True on success.
+func (b *Bot) RemoveMyProfilePhoto() (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    r, err := b.Request("removeMyProfilePhoto", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SetChatMenuButton methods's optional params
 type SetChatMenuButtonOpts struct {
     ChatId int64 `json:"chat_id,omitempty"`
@@ -3113,29 +4054,935 @@ func (b *Bot) GetMyDefaultAdministratorRights(opts *GetMyDefaultAdministratorRig
 
 }
 
+// Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object.
+func (b *Bot) GetAvailableGifts() (*types.Gifts, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    r, err := b.Request("getAvailableGifts", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.Gifts
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SendGift methods's optional params
+type SendGiftOpts struct {
+    UserId int64 `json:"user_id,omitempty"`
+    ChatId int64 `json:"chat_id,omitempty"`
+    PayForUpgrade bool `json:"pay_for_upgrade,omitempty"`
+    Text string `json:"text,omitempty"`
+    TextParseMode string `json:"text_parse_mode,omitempty"`
+    TextEntities []types.MessageEntity `json:"text_entities,omitempty"`
+}
+
+// Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success.
+func (b *Bot) SendGift(giftId string, opts *SendGiftOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["gift_id"] = giftId
+    if opts != nil {
+        params["user_id"] = strconv.FormatInt(opts.UserId, 10)
+        params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
+        params["pay_for_upgrade"] = strconv.FormatBool(opts.PayForUpgrade)
+        params["text"] = opts.Text
+        params["text_parse_mode"] = opts.TextParseMode
+
+        if opts.TextEntities != nil {
+            bs, err := json.Marshal(opts.TextEntities)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field text_entities: %w", err)
+            }
+            params["text_entities"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendGift", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GiftPremiumSubscription methods's optional params
+type GiftPremiumSubscriptionOpts struct {
+    Text string `json:"text,omitempty"`
+    TextParseMode string `json:"text_parse_mode,omitempty"`
+    TextEntities []types.MessageEntity `json:"text_entities,omitempty"`
+}
+
+// Gifts a Telegram Premium subscription to the given user. Returns True on success.
+func (b *Bot) GiftPremiumSubscription(userId int64, monthCount int64, starCount int64, opts *GiftPremiumSubscriptionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["month_count"] = strconv.FormatInt(monthCount, 10)
+    params["star_count"] = strconv.FormatInt(starCount, 10)
+    if opts != nil {
+        params["text"] = opts.Text
+        params["text_parse_mode"] = opts.TextParseMode
+
+        if opts.TextEntities != nil {
+            bs, err := json.Marshal(opts.TextEntities)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field text_entities: %w", err)
+            }
+            params["text_entities"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("giftPremiumSubscription", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// VerifyUser methods's optional params
+type VerifyUserOpts struct {
+    CustomDescription string `json:"custom_description,omitempty"`
+}
+
+// Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
+func (b *Bot) VerifyUser(userId int64, opts *VerifyUserOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    if opts != nil {
+        params["custom_description"] = opts.CustomDescription
+    }
+
+
+    r, err := b.Request("verifyUser", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// VerifyChat methods's optional params
+type VerifyChatOpts struct {
+    CustomDescription string `json:"custom_description,omitempty"`
+}
+
+// Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
+func (b *Bot) VerifyChat(chatId int64, opts *VerifyChatOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    if opts != nil {
+        params["custom_description"] = opts.CustomDescription
+    }
+
+
+    r, err := b.Request("verifyChat", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success.
+func (b *Bot) RemoveUserVerification(userId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    r, err := b.Request("removeUserVerification", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success.
+func (b *Bot) RemoveChatVerification(chatId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    r, err := b.Request("removeChatVerification", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Marks incoming message as read on behalf of a business account. Requires the can_read_messages business bot right. Returns True on success.
+func (b *Bot) ReadBusinessMessage(businessConnectionId string, chatId int64, messageId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["message_id"] = strconv.FormatInt(messageId, 10)
+
+    r, err := b.Request("readBusinessMessage", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
+func (b *Bot) DeleteBusinessMessages(businessConnectionId string, messageIds []int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+
+    if messageIds != nil {
+        bs, err := json.Marshal(messageIds)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field message_ids: %w", err)
+        }
+        params["message_ids"] = string(bs)
+    }
+
+
+    r, err := b.Request("deleteBusinessMessages", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetBusinessAccountName methods's optional params
+type SetBusinessAccountNameOpts struct {
+    LastName string `json:"last_name,omitempty"`
+}
+
+// Changes the first and last name of a managed business account. Requires the can_change_name business bot right. Returns True on success.
+func (b *Bot) SetBusinessAccountName(businessConnectionId string, firstName string, opts *SetBusinessAccountNameOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["first_name"] = firstName
+    if opts != nil {
+        params["last_name"] = opts.LastName
+    }
+
+
+    r, err := b.Request("setBusinessAccountName", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetBusinessAccountUsername methods's optional params
+type SetBusinessAccountUsernameOpts struct {
+    Username string `json:"username,omitempty"`
+}
+
+// Changes the username of a managed business account. Requires the can_change_username business bot right. Returns True on success.
+func (b *Bot) SetBusinessAccountUsername(businessConnectionId string, opts *SetBusinessAccountUsernameOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    if opts != nil {
+        params["username"] = opts.Username
+    }
+
+
+    r, err := b.Request("setBusinessAccountUsername", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetBusinessAccountBio methods's optional params
+type SetBusinessAccountBioOpts struct {
+    Bio string `json:"bio,omitempty"`
+}
+
+// Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.
+func (b *Bot) SetBusinessAccountBio(businessConnectionId string, opts *SetBusinessAccountBioOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    if opts != nil {
+        params["bio"] = opts.Bio
+    }
+
+
+    r, err := b.Request("setBusinessAccountBio", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SetBusinessAccountProfilePhoto methods's optional params
+type SetBusinessAccountProfilePhotoOpts struct {
+    IsPublic bool `json:"is_public,omitempty"`
+}
+
+// Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+func (b *Bot) SetBusinessAccountProfilePhoto(businessConnectionId string, photo *types.InputProfilePhoto, opts *SetBusinessAccountProfilePhotoOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+
+    if photo != nil {
+        bs, err := json.Marshal(photo)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field photo: %w", err)
+        }
+        params["photo"] = string(bs)
+    }
+
+    if opts != nil {
+        params["is_public"] = strconv.FormatBool(opts.IsPublic)
+    }
+
+
+    r, err := b.Request("setBusinessAccountProfilePhoto", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// RemoveBusinessAccountProfilePhoto methods's optional params
+type RemoveBusinessAccountProfilePhotoOpts struct {
+    IsPublic bool `json:"is_public,omitempty"`
+}
+
+// Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
+func (b *Bot) RemoveBusinessAccountProfilePhoto(businessConnectionId string, opts *RemoveBusinessAccountProfilePhotoOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    if opts != nil {
+        params["is_public"] = strconv.FormatBool(opts.IsPublic)
+    }
+
+
+    r, err := b.Request("removeBusinessAccountProfilePhoto", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.
+func (b *Bot) SetBusinessAccountGiftSettings(businessConnectionId string, showGiftButton bool, acceptedGiftTypes *types.AcceptedGiftTypes) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+    params["show_gift_button"] = strconv.FormatBool(showGiftButton)
+
+    if acceptedGiftTypes != nil {
+        bs, err := json.Marshal(acceptedGiftTypes)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field accepted_gift_types: %w", err)
+        }
+        params["accepted_gift_types"] = string(bs)
+    }
+
+
+    r, err := b.Request("setBusinessAccountGiftSettings", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success.
+func (b *Bot) GetBusinessAccountStarBalance(businessConnectionId string) (*types.StarAmount, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+
+    r, err := b.Request("getBusinessAccountStarBalance", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.StarAmount
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Transfers Telegram Stars from the business account balance to the bot's balance. Requires the can_transfer_stars business bot right. Returns True on success.
+func (b *Bot) TransferBusinessAccountStars(businessConnectionId string, starCount int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+    params["star_count"] = strconv.FormatInt(starCount, 10)
+
+    r, err := b.Request("transferBusinessAccountStars", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetBusinessAccountGifts methods's optional params
+type GetBusinessAccountGiftsOpts struct {
+    ExcludeUnsaved bool `json:"exclude_unsaved,omitempty"`
+    ExcludeSaved bool `json:"exclude_saved,omitempty"`
+    ExcludeUnlimited bool `json:"exclude_unlimited,omitempty"`
+    ExcludeLimitedUpgradable bool `json:"exclude_limited_upgradable,omitempty"`
+    ExcludeLimitedNonUpgradable bool `json:"exclude_limited_non_upgradable,omitempty"`
+    ExcludeUnique bool `json:"exclude_unique,omitempty"`
+    ExcludeFromBlockchain bool `json:"exclude_from_blockchain,omitempty"`
+    SortByPrice bool `json:"sort_by_price,omitempty"`
+    Offset string `json:"offset,omitempty"`
+    Limit int64 `json:"limit,omitempty"`
+}
+
+// Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success.
+func (b *Bot) GetBusinessAccountGifts(businessConnectionId string, opts *GetBusinessAccountGiftsOpts) (*types.OwnedGifts, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    if opts != nil {
+        params["exclude_unsaved"] = strconv.FormatBool(opts.ExcludeUnsaved)
+        params["exclude_saved"] = strconv.FormatBool(opts.ExcludeSaved)
+        params["exclude_unlimited"] = strconv.FormatBool(opts.ExcludeUnlimited)
+        params["exclude_limited_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedUpgradable)
+        params["exclude_limited_non_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedNonUpgradable)
+        params["exclude_unique"] = strconv.FormatBool(opts.ExcludeUnique)
+        params["exclude_from_blockchain"] = strconv.FormatBool(opts.ExcludeFromBlockchain)
+        params["sort_by_price"] = strconv.FormatBool(opts.SortByPrice)
+        params["offset"] = opts.Offset
+        params["limit"] = strconv.FormatInt(opts.Limit, 10)
+    }
+
+
+    r, err := b.Request("getBusinessAccountGifts", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.OwnedGifts
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetUserGifts methods's optional params
+type GetUserGiftsOpts struct {
+    ExcludeUnlimited bool `json:"exclude_unlimited,omitempty"`
+    ExcludeLimitedUpgradable bool `json:"exclude_limited_upgradable,omitempty"`
+    ExcludeLimitedNonUpgradable bool `json:"exclude_limited_non_upgradable,omitempty"`
+    ExcludeFromBlockchain bool `json:"exclude_from_blockchain,omitempty"`
+    ExcludeUnique bool `json:"exclude_unique,omitempty"`
+    SortByPrice bool `json:"sort_by_price,omitempty"`
+    Offset string `json:"offset,omitempty"`
+    Limit int64 `json:"limit,omitempty"`
+}
+
+// Returns the gifts owned and hosted by a user. Returns OwnedGifts on success.
+func (b *Bot) GetUserGifts(userId int64, opts *GetUserGiftsOpts) (*types.OwnedGifts, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    if opts != nil {
+        params["exclude_unlimited"] = strconv.FormatBool(opts.ExcludeUnlimited)
+        params["exclude_limited_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedUpgradable)
+        params["exclude_limited_non_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedNonUpgradable)
+        params["exclude_from_blockchain"] = strconv.FormatBool(opts.ExcludeFromBlockchain)
+        params["exclude_unique"] = strconv.FormatBool(opts.ExcludeUnique)
+        params["sort_by_price"] = strconv.FormatBool(opts.SortByPrice)
+        params["offset"] = opts.Offset
+        params["limit"] = strconv.FormatInt(opts.Limit, 10)
+    }
+
+
+    r, err := b.Request("getUserGifts", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.OwnedGifts
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// GetChatGifts methods's optional params
+type GetChatGiftsOpts struct {
+    ExcludeUnsaved bool `json:"exclude_unsaved,omitempty"`
+    ExcludeSaved bool `json:"exclude_saved,omitempty"`
+    ExcludeUnlimited bool `json:"exclude_unlimited,omitempty"`
+    ExcludeLimitedUpgradable bool `json:"exclude_limited_upgradable,omitempty"`
+    ExcludeLimitedNonUpgradable bool `json:"exclude_limited_non_upgradable,omitempty"`
+    ExcludeFromBlockchain bool `json:"exclude_from_blockchain,omitempty"`
+    ExcludeUnique bool `json:"exclude_unique,omitempty"`
+    SortByPrice bool `json:"sort_by_price,omitempty"`
+    Offset string `json:"offset,omitempty"`
+    Limit int64 `json:"limit,omitempty"`
+}
+
+// Returns the gifts owned by a chat. Returns OwnedGifts on success.
+func (b *Bot) GetChatGifts(chatId int64, opts *GetChatGiftsOpts) (*types.OwnedGifts, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    if opts != nil {
+        params["exclude_unsaved"] = strconv.FormatBool(opts.ExcludeUnsaved)
+        params["exclude_saved"] = strconv.FormatBool(opts.ExcludeSaved)
+        params["exclude_unlimited"] = strconv.FormatBool(opts.ExcludeUnlimited)
+        params["exclude_limited_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedUpgradable)
+        params["exclude_limited_non_upgradable"] = strconv.FormatBool(opts.ExcludeLimitedNonUpgradable)
+        params["exclude_from_blockchain"] = strconv.FormatBool(opts.ExcludeFromBlockchain)
+        params["exclude_unique"] = strconv.FormatBool(opts.ExcludeUnique)
+        params["sort_by_price"] = strconv.FormatBool(opts.SortByPrice)
+        params["offset"] = opts.Offset
+        params["limit"] = strconv.FormatInt(opts.Limit, 10)
+    }
+
+
+    r, err := b.Request("getChatGifts", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.OwnedGifts
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success.
+func (b *Bot) ConvertGiftToStars(businessConnectionId string, ownedGiftId string) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+    params["owned_gift_id"] = ownedGiftId
+
+    r, err := b.Request("convertGiftToStars", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// UpgradeGift methods's optional params
+type UpgradeGiftOpts struct {
+    KeepOriginalDetails bool `json:"keep_original_details,omitempty"`
+    StarCount int64 `json:"star_count,omitempty"`
+}
+
+// Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success.
+func (b *Bot) UpgradeGift(businessConnectionId string, ownedGiftId string, opts *UpgradeGiftOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["owned_gift_id"] = ownedGiftId
+    if opts != nil {
+        params["keep_original_details"] = strconv.FormatBool(opts.KeepOriginalDetails)
+        params["star_count"] = strconv.FormatInt(opts.StarCount, 10)
+    }
+
+
+    r, err := b.Request("upgradeGift", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// TransferGift methods's optional params
+type TransferGiftOpts struct {
+    StarCount int64 `json:"star_count,omitempty"`
+}
+
+// Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success.
+func (b *Bot) TransferGift(businessConnectionId string, ownedGiftId string, newOwnerChatId int64, opts *TransferGiftOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["owned_gift_id"] = ownedGiftId
+    params["new_owner_chat_id"] = strconv.FormatInt(newOwnerChatId, 10)
+    if opts != nil {
+        params["star_count"] = strconv.FormatInt(opts.StarCount, 10)
+    }
+
+
+    r, err := b.Request("transferGift", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// PostStory methods's optional params
+type PostStoryOpts struct {
+    Caption string `json:"caption,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    Areas []types.StoryArea `json:"areas,omitempty"`
+    PostToChatPage bool `json:"post_to_chat_page,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+}
+
+// Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+func (b *Bot) PostStory(businessConnectionId string, content *types.InputStoryContent, activePeriod int64, opts *PostStoryOpts) (*types.Story, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+
+    if content != nil {
+        bs, err := json.Marshal(content)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field content: %w", err)
+        }
+        params["content"] = string(bs)
+    }
+
+    params["active_period"] = strconv.FormatInt(activePeriod, 10)
+    if opts != nil {
+        params["caption"] = opts.Caption
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.CaptionEntities != nil {
+            bs, err := json.Marshal(opts.CaptionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field caption_entities: %w", err)
+            }
+            params["caption_entities"] = string(bs)
+        }
+
+
+        if opts.Areas != nil {
+            bs, err := json.Marshal(opts.Areas)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field areas: %w", err)
+            }
+            params["areas"] = string(bs)
+        }
+
+        params["post_to_chat_page"] = strconv.FormatBool(opts.PostToChatPage)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+    }
+
+
+    r, err := b.Request("postStory", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Story
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// RepostStory methods's optional params
+type RepostStoryOpts struct {
+    PostToChatPage bool `json:"post_to_chat_page,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+}
+
+// Reposts a story on behalf of a business account from another business account. Both business accounts must be managed by the same bot, and the story on the source account must have been posted (or reposted) by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story on success.
+func (b *Bot) RepostStory(businessConnectionId string, fromChatId int64, fromStoryId int64, activePeriod int64, opts *RepostStoryOpts) (*types.Story, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["from_chat_id"] = strconv.FormatInt(fromChatId, 10)
+    params["from_story_id"] = strconv.FormatInt(fromStoryId, 10)
+    params["active_period"] = strconv.FormatInt(activePeriod, 10)
+    if opts != nil {
+        params["post_to_chat_page"] = strconv.FormatBool(opts.PostToChatPage)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+    }
+
+
+    r, err := b.Request("repostStory", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Story
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// EditStory methods's optional params
+type EditStoryOpts struct {
+    Caption string `json:"caption,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    Areas []types.StoryArea `json:"areas,omitempty"`
+}
+
+// Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
+func (b *Bot) EditStory(businessConnectionId string, storyId int64, content *types.InputStoryContent, opts *EditStoryOpts) (*types.Story, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["story_id"] = strconv.FormatInt(storyId, 10)
+
+    if content != nil {
+        bs, err := json.Marshal(content)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field content: %w", err)
+        }
+        params["content"] = string(bs)
+    }
+
+    if opts != nil {
+        params["caption"] = opts.Caption
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.CaptionEntities != nil {
+            bs, err := json.Marshal(opts.CaptionEntities)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field caption_entities: %w", err)
+            }
+            params["caption_entities"] = string(bs)
+        }
+
+
+        if opts.Areas != nil {
+            bs, err := json.Marshal(opts.Areas)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field areas: %w", err)
+            }
+            params["areas"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editStory", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Story
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success.
+func (b *Bot) DeleteStory(businessConnectionId string, storyId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["business_connection_id"] = businessConnectionId
+    params["story_id"] = strconv.FormatInt(storyId, 10)
+
+    r, err := b.Request("deleteStory", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned.
+func (b *Bot) AnswerWebAppQuery(webAppQueryId string, result *types.InlineQueryResult) (*types.SentWebAppMessage, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["web_app_query_id"] = webAppQueryId
+
+    if result != nil {
+        bs, err := json.Marshal(result)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field result: %w", err)
+        }
+        params["result"] = string(bs)
+    }
+
+
+    r, err := b.Request("answerWebAppQuery", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.SentWebAppMessage
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SavePreparedInlineMessage methods's optional params
+type SavePreparedInlineMessageOpts struct {
+    AllowUserChats bool `json:"allow_user_chats,omitempty"`
+    AllowBotChats bool `json:"allow_bot_chats,omitempty"`
+    AllowGroupChats bool `json:"allow_group_chats,omitempty"`
+    AllowChannelChats bool `json:"allow_channel_chats,omitempty"`
+}
+
+// Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object.
+func (b *Bot) SavePreparedInlineMessage(userId int64, result *types.InlineQueryResult, opts *SavePreparedInlineMessageOpts) (*types.PreparedInlineMessage, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    if result != nil {
+        bs, err := json.Marshal(result)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field result: %w", err)
+        }
+        params["result"] = string(bs)
+    }
+
+    if opts != nil {
+        params["allow_user_chats"] = strconv.FormatBool(opts.AllowUserChats)
+        params["allow_bot_chats"] = strconv.FormatBool(opts.AllowBotChats)
+        params["allow_group_chats"] = strconv.FormatBool(opts.AllowGroupChats)
+        params["allow_channel_chats"] = strconv.FormatBool(opts.AllowChannelChats)
+    }
+
+
+    r, err := b.Request("savePreparedInlineMessage", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.PreparedInlineMessage
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object.
+func (b *Bot) SavePreparedKeyboardButton(userId int64, button *types.KeyboardButton) (*types.PreparedKeyboardButton, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+
+    if button != nil {
+        bs, err := json.Marshal(button)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field button: %w", err)
+        }
+        params["button"] = string(bs)
+    }
+
+
+    r, err := b.Request("savePreparedKeyboardButton", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.PreparedKeyboardButton
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // EditMessageText methods's optional params
 type EditMessageTextOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ChatId int64 `json:"chat_id,omitempty"`
     MessageId int64 `json:"message_id,omitempty"`
     InlineMessageId string `json:"inline_message_id,omitempty"`
+    Text string `json:"text,omitempty"`
     ParseMode string `json:"parse_mode,omitempty"`
     Entities []types.MessageEntity `json:"entities,omitempty"`
     LinkPreviewOptions *types.LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    RichMessage *types.InputRichMessage `json:"rich_message,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
-func (b *Bot) EditMessageText(text string, opts *EditMessageTextOpts) (*types.Message, error) {
+// Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+func (b *Bot) EditMessageText(opts *EditMessageTextOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
 
-    params["text"] = text
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["chat_id"] = strconv.FormatInt(opts.ChatId, 10)
         params["message_id"] = strconv.FormatInt(opts.MessageId, 10)
         params["inline_message_id"] = opts.InlineMessageId
+        params["text"] = opts.Text
         params["parse_mode"] = opts.ParseMode
 
         if opts.Entities != nil {
@@ -3153,6 +5000,15 @@ func (b *Bot) EditMessageText(text string, opts *EditMessageTextOpts) (*types.Me
                 return nil, fmt.Errorf("failed to marshal field link_preview_options: %w", err)
             }
             params["link_preview_options"] = string(bs)
+        }
+
+
+        if opts.RichMessage != nil {
+            bs, err := json.Marshal(opts.RichMessage)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field rich_message: %w", err)
+            }
+            params["rich_message"] = string(bs)
         }
 
 
@@ -3245,7 +5101,7 @@ type EditMessageMediaOpts struct {
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
-// Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 func (b *Bot) EditMessageMedia(media *types.InputMedia, opts *EditMessageMediaOpts) (*types.Message, error) {
     params := map[string]string{}
     data_params := map[string]string{}
@@ -3381,6 +5237,52 @@ func (b *Bot) StopMessageLiveLocation(opts *StopMessageLiveLocationOpts) (*types
 
 }
 
+// EditMessageChecklist methods's optional params
+type EditMessageChecklistOpts struct {
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned.
+func (b *Bot) EditMessageChecklist(businessConnectionId string, chatId int64, messageId int64, checklist *types.InputChecklist, opts *EditMessageChecklistOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["business_connection_id"] = businessConnectionId
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["message_id"] = strconv.FormatInt(messageId, 10)
+
+    if checklist != nil {
+        bs, err := json.Marshal(checklist)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field checklist: %w", err)
+        }
+        params["checklist"] = string(bs)
+    }
+
+    if opts != nil {
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editMessageChecklist", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // EditMessageReplyMarkup methods's optional params
 type EditMessageReplyMarkupOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
@@ -3461,6 +5363,256 @@ func (b *Bot) StopPoll(chatId int64, messageId int64, opts *StopPollOpts) (*type
 
 }
 
+// EditEphemeralMessageText methods's optional params
+type EditEphemeralMessageTextOpts struct {
+    ParseMode string `json:"parse_mode,omitempty"`
+    Entities []types.MessageEntity `json:"entities,omitempty"`
+    LinkPreviewOptions *types.LinkPreviewOptions `json:"link_preview_options,omitempty"`
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+func (b *Bot) EditEphemeralMessageText(chatId int64, receiverUserId int64, ephemeralMessageId int64, text string, opts *EditEphemeralMessageTextOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["receiver_user_id"] = strconv.FormatInt(receiverUserId, 10)
+    params["ephemeral_message_id"] = strconv.FormatInt(ephemeralMessageId, 10)
+    params["text"] = text
+    if opts != nil {
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.Entities != nil {
+            bs, err := json.Marshal(opts.Entities)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field entities: %w", err)
+            }
+            params["entities"] = string(bs)
+        }
+
+
+        if opts.LinkPreviewOptions != nil {
+            bs, err := json.Marshal(opts.LinkPreviewOptions)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field link_preview_options: %w", err)
+            }
+            params["link_preview_options"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editEphemeralMessageText", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// EditEphemeralMessageMedia methods's optional params
+type EditEphemeralMessageMediaOpts struct {
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+func (b *Bot) EditEphemeralMessageMedia(chatId int64, receiverUserId int64, ephemeralMessageId int64, media *types.InputMedia, opts *EditEphemeralMessageMediaOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["receiver_user_id"] = strconv.FormatInt(receiverUserId, 10)
+    params["ephemeral_message_id"] = strconv.FormatInt(ephemeralMessageId, 10)
+
+    if media != nil {
+        bs, err := json.Marshal(media)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field media: %w", err)
+        }
+        params["media"] = string(bs)
+    }
+
+    if opts != nil {
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editEphemeralMessageMedia", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// EditEphemeralMessageCaption methods's optional params
+type EditEphemeralMessageCaptionOpts struct {
+    Caption string `json:"caption,omitempty"`
+    ParseMode string `json:"parse_mode,omitempty"`
+    CaptionEntities []types.MessageEntity `json:"caption_entities,omitempty"`
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+func (b *Bot) EditEphemeralMessageCaption(chatId int64, receiverUserId int64, ephemeralMessageId int64, opts *EditEphemeralMessageCaptionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["receiver_user_id"] = strconv.FormatInt(receiverUserId, 10)
+    params["ephemeral_message_id"] = strconv.FormatInt(ephemeralMessageId, 10)
+    if opts != nil {
+        params["caption"] = opts.Caption
+        params["parse_mode"] = opts.ParseMode
+
+        if opts.CaptionEntities != nil {
+            bs, err := json.Marshal(opts.CaptionEntities)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field caption_entities: %w", err)
+            }
+            params["caption_entities"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editEphemeralMessageCaption", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// EditEphemeralMessageReplyMarkup methods's optional params
+type EditEphemeralMessageReplyMarkupOpts struct {
+    ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+func (b *Bot) EditEphemeralMessageReplyMarkup(chatId int64, receiverUserId int64, ephemeralMessageId int64, opts *EditEphemeralMessageReplyMarkupOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["receiver_user_id"] = strconv.FormatInt(receiverUserId, 10)
+    params["ephemeral_message_id"] = strconv.FormatInt(ephemeralMessageId, 10)
+    if opts != nil {
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return false, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("editEphemeralMessageReplyMarkup", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// ApproveSuggestedPost methods's optional params
+type ApproveSuggestedPostOpts struct {
+    SendDate int64 `json:"send_date,omitempty"`
+}
+
+// Use this method to approve a suggested post in a direct messages chat. The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success.
+func (b *Bot) ApproveSuggestedPost(chatId int64, messageId int64, opts *ApproveSuggestedPostOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["message_id"] = strconv.FormatInt(messageId, 10)
+    if opts != nil {
+        params["send_date"] = strconv.FormatInt(opts.SendDate, 10)
+    }
+
+
+    r, err := b.Request("approveSuggestedPost", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// DeclineSuggestedPost methods's optional params
+type DeclineSuggestedPostOpts struct {
+    Comment string `json:"comment,omitempty"`
+}
+
+// Use this method to decline a suggested post in a direct messages chat. The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on success.
+func (b *Bot) DeclineSuggestedPost(chatId int64, messageId int64, opts *DeclineSuggestedPostOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["message_id"] = strconv.FormatInt(messageId, 10)
+    if opts != nil {
+        params["comment"] = opts.Comment
+    }
+
+
+    r, err := b.Request("declineSuggestedPost", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // Use this method to delete a message, including service messages, with the following limitations:
 // - A message can only be deleted if it was sent less than 48 hours ago.
 // - Service messages about a supergroup, channel, or forum topic creation can't be deleted.
@@ -3469,7 +5621,8 @@ func (b *Bot) StopPoll(chatId int64, messageId int64, opts *StopPollOpts) (*type
 // - Bots can delete incoming messages in private chats.
 // - Bots granted can_post_messages permissions can delete outgoing messages in channels.
 // - If the bot is an administrator of a group, it can delete any message there.
-// - If the bot has can_delete_messages permission in a supergroup or a channel, it can delete any message there.
+// - If the bot has can_delete_messages administrator right in a supergroup or a channel, it can delete any message there.
+// - If the bot has can_manage_direct_messages administrator right in a channel, it can delete any message in the corresponding direct messages chat.
 // Returns True on success.
 func (b *Bot) DeleteMessage(chatId int64, messageId int64) (bool, error) {
     params := map[string]string{}
@@ -3512,14 +5665,96 @@ func (b *Bot) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
 
 }
 
+// Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns True on success.
+func (b *Bot) DeleteEphemeralMessage(chatId int64, receiverUserId int64, ephemeralMessageId int64) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["receiver_user_id"] = strconv.FormatInt(receiverUserId, 10)
+    params["ephemeral_message_id"] = strconv.FormatInt(ephemeralMessageId, 10)
+
+    r, err := b.Request("deleteEphemeralMessage", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// DeleteMessageReaction methods's optional params
+type DeleteMessageReactionOpts struct {
+    UserId int64 `json:"user_id,omitempty"`
+    ActorChatId int64 `json:"actor_chat_id,omitempty"`
+}
+
+// Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+func (b *Bot) DeleteMessageReaction(chatId int64, messageId int64, opts *DeleteMessageReactionOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["message_id"] = strconv.FormatInt(messageId, 10)
+    if opts != nil {
+        params["user_id"] = strconv.FormatInt(opts.UserId, 10)
+        params["actor_chat_id"] = strconv.FormatInt(opts.ActorChatId, 10)
+    }
+
+
+    r, err := b.Request("deleteMessageReaction", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// DeleteAllMessageReactions methods's optional params
+type DeleteAllMessageReactionsOpts struct {
+    UserId int64 `json:"user_id,omitempty"`
+    ActorChatId int64 `json:"actor_chat_id,omitempty"`
+}
+
+// Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+func (b *Bot) DeleteAllMessageReactions(chatId int64, opts *DeleteAllMessageReactionsOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    if opts != nil {
+        params["user_id"] = strconv.FormatInt(opts.UserId, 10)
+        params["actor_chat_id"] = strconv.FormatInt(opts.ActorChatId, 10)
+    }
+
+
+    r, err := b.Request("deleteAllMessageReactions", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // SendSticker methods's optional params
 type SendStickerOpts struct {
     BusinessConnectionId string `json:"business_connection_id,omitempty"`
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    ReceiverUserId int64 `json:"receiver_user_id,omitempty"`
+    CallbackQueryId string `json:"callback_query_id,omitempty"`
     Emoji string `json:"emoji,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
 }
@@ -3548,10 +5783,23 @@ func (b *Bot) SendSticker(chatId int64, sticker types.InputFile, opts *SendStick
     if opts != nil {
         params["business_connection_id"] = opts.BusinessConnectionId
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["receiver_user_id"] = strconv.FormatInt(opts.ReceiverUserId, 10)
+        params["callback_query_id"] = opts.CallbackQueryId
         params["emoji"] = opts.Emoji
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -3980,6 +6228,121 @@ func (b *Bot) DeleteStickerSet(name string) (bool, error) {
 
 }
 
+// SendRichMessage methods's optional params
+type SendRichMessageOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
+    DisableNotification bool `json:"disable_notification,omitempty"`
+    ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
+    MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
+    ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
+    ReplyMarkup types.ReplyMarkup `json:"reply_markup,omitempty"`
+}
+
+// Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
+func (b *Bot) SendRichMessage(chatId int64, richMessage *types.InputRichMessage, opts *SendRichMessageOpts) (*types.Message, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+
+    if richMessage != nil {
+        bs, err := json.Marshal(richMessage)
+        if err != nil {
+            return nil, fmt.Errorf("failed to marshal field rich_message: %w", err)
+        }
+        params["rich_message"] = string(bs)
+    }
+
+    if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
+        params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
+        params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
+        params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyParameters != nil {
+            bs, err := json.Marshal(opts.ReplyParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_parameters: %w", err)
+            }
+            params["reply_parameters"] = string(bs)
+        }
+
+
+        if opts.ReplyMarkup != nil {
+            bs, err := json.Marshal(opts.ReplyMarkup)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field reply_markup: %w", err)
+            }
+            params["reply_markup"] = string(bs)
+        }
+
+    }
+
+
+    r, err := b.Request("sendRichMessage", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+
+    
+    var res *types.Message
+    return res, json.Unmarshal(r, &res) 
+
+}
+
+// SendRichMessageDraft methods's optional params
+type SendRichMessageDraftOpts struct {
+    MessageThreadId int64 `json:"message_thread_id,omitempty"`
+}
+
+// Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
+func (b *Bot) SendRichMessageDraft(chatId int64, draftId int64, richMessage *types.InputRichMessage, opts *SendRichMessageDraftOpts) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    params["chat_id"] = strconv.FormatInt(chatId, 10)
+    params["draft_id"] = strconv.FormatInt(draftId, 10)
+
+    if richMessage != nil {
+        bs, err := json.Marshal(richMessage)
+        if err != nil {
+            return false, fmt.Errorf("failed to marshal field rich_message: %w", err)
+        }
+        params["rich_message"] = string(bs)
+    }
+
+    if opts != nil {
+        params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+    }
+
+
+    r, err := b.Request("sendRichMessageDraft", params, data_params)
+    if err != nil {
+        return false, err
+    }
+
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // AnswerInlineQuery methods's optional params
 type AnswerInlineQueryOpts struct {
     CacheTime int64 `json:"cache_time,omitempty"`
@@ -4031,34 +6394,10 @@ func (b *Bot) AnswerInlineQuery(inlineQueryId string, results []types.InlineQuer
 
 }
 
-// Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned.
-func (b *Bot) AnswerWebAppQuery(webAppQueryId string, result *types.InlineQueryResult) (*types.SentWebAppMessage, error) {
-    params := map[string]string{}
-    data_params := map[string]string{}
-    params["web_app_query_id"] = webAppQueryId
-
-    if result != nil {
-        bs, err := json.Marshal(result)
-        if err != nil {
-            return nil, fmt.Errorf("failed to marshal field result: %w", err)
-        }
-        params["result"] = string(bs)
-    }
-
-
-    r, err := b.Request("answerWebAppQuery", params, data_params)
-    if err != nil {
-        return nil, err
-    }
-    
-    var res *types.SentWebAppMessage
-    return res, json.Unmarshal(r, &res) 
-
-}
-
 // SendInvoice methods's optional params
 type SendInvoiceOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
+    DirectMessagesTopicId int64 `json:"direct_messages_topic_id,omitempty"`
     ProviderToken string `json:"provider_token,omitempty"`
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
     SuggestedTipAmounts []int64 `json:"suggested_tip_amounts,omitempty"`
@@ -4077,7 +6416,9 @@ type SendInvoiceOpts struct {
     IsFlexible bool `json:"is_flexible,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
+    SuggestedPostParameters *types.SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
@@ -4103,6 +6444,7 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
 
     if opts != nil {
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
+        params["direct_messages_topic_id"] = strconv.FormatInt(opts.DirectMessagesTopicId, 10)
         params["provider_token"] = opts.ProviderToken
         params["max_tip_amount"] = strconv.FormatInt(opts.MaxTipAmount, 10)
 
@@ -4129,7 +6471,17 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
         params["is_flexible"] = strconv.FormatBool(opts.IsFlexible)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
+
+        if opts.SuggestedPostParameters != nil {
+            bs, err := json.Marshal(opts.SuggestedPostParameters)
+            if err != nil {
+                return nil, fmt.Errorf("failed to marshal field suggested_post_parameters: %w", err)
+            }
+            params["suggested_post_parameters"] = string(bs)
+        }
+
 
         if opts.ReplyParameters != nil {
             bs, err := json.Marshal(opts.ReplyParameters)
@@ -4164,7 +6516,9 @@ func (b *Bot) SendInvoice(chatId int64, title string, description string, payloa
 
 // CreateInvoiceLink methods's optional params
 type CreateInvoiceLinkOpts struct {
+    BusinessConnectionId string `json:"business_connection_id,omitempty"`
     ProviderToken string `json:"provider_token,omitempty"`
+    SubscriptionPeriod int64 `json:"subscription_period,omitempty"`
     MaxTipAmount int64 `json:"max_tip_amount,omitempty"`
     SuggestedTipAmounts []int64 `json:"suggested_tip_amounts,omitempty"`
     ProviderData string `json:"provider_data,omitempty"`
@@ -4200,7 +6554,9 @@ func (b *Bot) CreateInvoiceLink(title string, description string, payload string
     }
 
     if opts != nil {
+        params["business_connection_id"] = opts.BusinessConnectionId
         params["provider_token"] = opts.ProviderToken
+        params["subscription_period"] = strconv.FormatInt(opts.SubscriptionPeriod, 10)
         params["max_tip_amount"] = strconv.FormatInt(opts.MaxTipAmount, 10)
 
         if opts.SuggestedTipAmounts != nil {
@@ -4303,6 +6659,21 @@ func (b *Bot) AnswerPreCheckoutQuery(preCheckoutQueryId string, ok bool, opts *A
 
 }
 
+// A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object.
+func (b *Bot) GetMyStarBalance() (*types.StarAmount, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+
+    r, err := b.Request("getMyStarBalance", params, data_params)
+    if err != nil {
+        return nil, err
+    }
+    
+    var res *types.StarAmount
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // GetStarTransactions methods's optional params
 type GetStarTransactionsOpts struct {
     Offset int64 `json:"offset,omitempty"`
@@ -4348,6 +6719,24 @@ func (b *Bot) RefundStarPayment(userId int64, telegramPaymentChargeId string) (b
 
 }
 
+// Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on success.
+func (b *Bot) EditUserStarSubscription(userId int64, telegramPaymentChargeId string, isCanceled bool) (bool, error) {
+    params := map[string]string{}
+    data_params := map[string]string{}
+    params["user_id"] = strconv.FormatInt(userId, 10)
+    params["telegram_payment_charge_id"] = telegramPaymentChargeId
+    params["is_canceled"] = strconv.FormatBool(isCanceled)
+
+    r, err := b.Request("editUserStarSubscription", params, data_params)
+    if err != nil {
+        return false, err
+    }
+    
+    var res bool
+    return res, json.Unmarshal(r, &res) 
+
+}
+
 // Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
 // Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
 func (b *Bot) SetPassportDataErrors(userId int64, errors []types.PassportElementError) (bool, error) {
@@ -4380,6 +6769,7 @@ type SendGameOpts struct {
     MessageThreadId int64 `json:"message_thread_id,omitempty"`
     DisableNotification bool `json:"disable_notification,omitempty"`
     ProtectContent bool `json:"protect_content,omitempty"`
+    AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
     MessageEffectId string `json:"message_effect_id,omitempty"`
     ReplyParameters *types.ReplyParameters `json:"reply_parameters,omitempty"`
     ReplyMarkup *types.InlineKeyboardMarkup `json:"reply_markup,omitempty"`
@@ -4397,6 +6787,7 @@ func (b *Bot) SendGame(chatId int64, gameShortName string, opts *SendGameOpts) (
         params["message_thread_id"] = strconv.FormatInt(opts.MessageThreadId, 10)
         params["disable_notification"] = strconv.FormatBool(opts.DisableNotification)
         params["protect_content"] = strconv.FormatBool(opts.ProtectContent)
+        params["allow_paid_broadcast"] = strconv.FormatBool(opts.AllowPaidBroadcast)
         params["message_effect_id"] = opts.MessageEffectId
 
         if opts.ReplyParameters != nil {
